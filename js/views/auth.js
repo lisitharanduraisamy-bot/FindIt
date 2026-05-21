@@ -71,7 +71,9 @@ export default {
                         <strong style="font-size: 14px; color: var(--color-on-surface); font-family: 'Outfit', sans-serif;">Sign In with Google</strong>
                     </button>
                 </div>
-            </di    renderRegister() {
+            </div>
+        `;
+    },
 
     renderRegister() {
         return `
@@ -212,22 +214,7 @@ export default {
             });
         }
 
-        // Tab selection switches
-        const tabStandard = document.getElementById("tab-standard-login");
-        const tabSSO = document.getElementById("tab-sso-login");
-
-        if (tabStandard) {
-            tabStandard.addEventListener("click", () => {
-                this.mode = "login";
-                app.renderView();
-            });
-        }
-        if (tabSSO) {
-            tabSSO.addEventListener("click", () => {
-                this.mode = "sso";
-                app.renderView();
-            });
-        }
+        // Tab selection logic removed
 
         // --- STANDARD CREDENTIALS LOGIN SUBMIT ---
         const formLogin = document.getElementById("form-auth-login");
