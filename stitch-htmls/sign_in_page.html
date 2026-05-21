@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIt - Academic Sign In</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Shared Stylesheet -->
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-background);
+            padding: 24px;
+        }
+
+        .auth-card {
+            max-width: 440px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: var(--rounded-lg);
+            box-shadow: var(--shadow-overlay);
+            border: 1px solid var(--color-outline-variant);
+            padding: 40px var(--spacing-md);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--rounded-md);
+            background-color: var(--color-primary-container);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 16px auto;
+            box-shadow: var(--shadow-card);
+        }
+
+        .auth-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-on-surface);
+            margin-bottom: 6px;
+        }
+
+        .auth-header p {
+            font-size: 13px;
+            color: var(--color-on-surface-variant);
+        }
+
+        .input-group-icon {
+            position: relative;
+        }
+
+        .input-group-icon i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-outline);
+            font-size: 14px;
+        }
+
+        .input-group-icon input {
+            padding-left: 40px !important;
+        }
+
+        .auth-checkbox-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            margin: 20px 0;
+            color: var(--color-on-surface-variant);
+        }
+
+        .auth-checkbox-row label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 24px 0;
+            font-size: 12px;
+            color: var(--color-outline);
+        }
+
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--color-outline-variant);
+        }
+
+        .auth-divider:not(:empty)::before {
+            margin-right: 12px;
+        }
+
+        .auth-divider:not(:empty)::after {
+            margin-left: 12px;
+        }
+
+        .role-switch-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: var(--rounded-default);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-on-surface-variant);
+            border: 1px dashed var(--color-outline-variant);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-switch-btn:hover {
+            background-color: var(--color-surface-container);
+            color: var(--color-primary);
+        }
+
+        /* Demo Credentials Styles */
+        .demo-accounts-panel {
+            background-color: #f8f9fa;
+            border: 1px dashed var(--color-outline-variant);
+            border-radius: var(--rounded-md);
+            padding: 16px;
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .demo-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-on-surface-variant);
+            margin: 0 0 12px 0 !important;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .demo-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .demo-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: #ffffff;
+            border: 1px solid var(--color-outline-variant);
+            border-radius: var(--rounded-default);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .demo-btn:hover {
+            border-color: var(--color-primary);
+            background-color: var(--color-surface-container);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .demo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--rounded-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .student-demo .demo-icon {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+
+        .admin-demo .demo-icon {
+            background-color: #fef7e0;
+            color: #b06000;
+        }
+
+        .demo-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .demo-role {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-on-surface);
+        }
+
+        .demo-email {
+            font-size: 11px;
+            color: var(--color-on-surface-variant);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2 id="auth-title">Student Sign In</h2>
+                <p id="auth-subtitle">Use your university credentials to access FindIt portal</p>
+            </div>
+
+            <!-- Login / Signup Form -->
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group" id="reg-name-group" style="display: none;">
+                    <label class="form-label" for="user-name">Full Name</label>
+                    <div class="input-group-icon">
+                        <i class="fa-solid fa-user"></i>
+                        <input class="form-input" type="text" id="user-name" placeholder="Alex Morgan">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="user-email">University Email</label>
+                    <div class="input-group-icon">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input class="form-input" type="email" id="user-email" required placeholder="student@university.edu">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="user-password">Password</label>
+                    <div class="input-group-icon">
+                        <i class="fa-solid fa-lock"></i>
+                        <input class="form-input" type="password" id="user-password" required placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="auth-checkbox-row">
+                    <label>
+                        <input type="checkbox" id="remember-me" checked> Remember this device
+                    </label>
+                    <a href="#" class="btn-link" onclick="alert('Password reset link sent to your registered academic email!')">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="padding: 12px;" id="btn-submit">
+                    <span>Sign In</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="auth-divider">OR</div>
+
+            <button type="button" class="role-switch-btn" id="btn-role-toggle" onclick="toggleRole()">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Switch to Security Admin Sign In</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 24px; font-size: 13px; color: var(--color-on-surface-variant);">
+                <span id="toggle-reg-text">Don't have an account yet?</span>
+                <a href="#" class="btn-link" id="toggle-reg-link" onclick="toggleRegister()" style="font-weight: 700;">Register Here</a>
+            </div>
+
+            <div class="auth-divider">DEMO CREDENTIALS</div>
+            
+            <div class="demo-accounts-panel">
+                <p class="demo-title"><i class="fa-solid fa-flask"></i> Quick Demo Access</p>
+                <div class="demo-buttons">
+                    <button type="button" class="demo-btn student-demo" onclick="loginAsDemo('student')">
+                        <div class="demo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                        <div class="demo-info">
+                            <span class="demo-role">Student Account</span>
+                            <span class="demo-email">student@university.edu</span>
+                        </div>
+                    </button>
+                    <button type="button" class="demo-btn admin-demo" onclick="loginAsDemo('admin')">
+                        <div class="demo-icon"><i class="fa-solid fa-user-shield"></i></div>
+                        <div class="demo-info">
+                            <span class="demo-role">Security Officer</span>
+                            <span class="demo-email">officer.miller@university.edu</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared Mockup State Engine -->
+    <script src="mock_state.js"></script>
+    <script>
+        let currentRole = "student"; // student or admin
+        let isRegister = false;
+
+        // Check if user came from register link
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('register') === 'true') {
+                toggleRegister();
+            }
+        });
+
+        function toggleRole() {
+            if (currentRole === "student") {
+                currentRole = "admin";
+                document.getElementById("auth-title").textContent = "Security Admin Sign In";
+                document.getElementById("auth-subtitle").textContent = "Access internal campus police claim queues & verification";
+                document.getElementById("user-email").placeholder = "officer.miller@university.edu";
+                document.getElementById("btn-role-toggle").innerHTML = '<i class="fa-solid fa-graduation-cap"></i> <span>Switch to Student Sign In</span>';
+            } else {
+                currentRole = "student";
+                document.getElementById("auth-title").textContent = "Student Sign In";
+                document.getElementById("auth-subtitle").textContent = "Use your university credentials to access FindIt portal";
+                document.getElementById("user-email").placeholder = "student@university.edu";
+                document.getElementById("btn-role-toggle").innerHTML = '<i class="fa-solid fa-user-shield"></i> <span>Switch to Security Admin Sign In</span>';
+            }
+        }
+
+        function toggleRegister() {
+            isRegister = !isRegister;
+            const nameGroup = document.getElementById("reg-name-group");
+            const title = document.getElementById("auth-title");
+            const btnSubmit = document.getElementById("btn-submit");
+            const toggleText = document.getElementById("toggle-reg-text");
+            const toggleLink = document.getElementById("toggle-reg-link");
+
+            if (isRegister) {
+                nameGroup.style.display = "block";
+                document.getElementById("user-name").setAttribute("required", "required");
+                title.textContent = "Create Academic Account";
+                btnSubmit.querySelector("span").textContent = "Register";
+                toggleText.textContent = "Already have an account?";
+                toggleLink.textContent = "Sign In Here";
+            } else {
+                nameGroup.style.display = "none";
+                document.getElementById("user-name").removeAttribute("required");
+                title.textContent = currentRole === "student" ? "Student Sign In" : "Security Admin Sign In";
+                btnSubmit.querySelector("span").textContent = "Sign In";
+                toggleText.textContent = "Don't have an account yet?";
+                toggleLink.textContent = "Register Here";
+            }
+        }
+
+        function loginAsDemo(role) {
+            if (isRegister) {
+                toggleRegister();
+            }
+
+            if (currentRole !== role) {
+                toggleRole();
+            }
+
+            const emailInput = document.getElementById("user-email");
+            const passInput = document.getElementById("user-password");
+            
+            emailInput.value = role === "admin" ? "officer.miller@university.edu" : "student@university.edu";
+            passInput.value = "password123";
+
+            emailInput.style.borderColor = "var(--color-primary)";
+            passInput.style.borderColor = "var(--color-primary)";
+            
+            const mockEvent = {
+                preventDefault: () => {}
+            };
+
+            setTimeout(() => {
+                emailInput.style.borderColor = "";
+                passInput.style.borderColor = "";
+                handleAuthSubmit(mockEvent);
+            }, 400);
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById("user-email").value;
+            let name = isRegister ? document.getElementById("user-name").value : "";
+            
+            if (!name) {
+                if (currentRole === "admin") {
+                    name = "Officer Miller";
+                } else {
+                    name = "Alex Morgan";
+                }
+            }
+
+            const avatar = name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+
+            // Save user role and data to mockState
+            const user = {
+                name: name,
+                email: email,
+                id: currentRole === "admin" ? "SEC-4412" : "2026-9876",
+                role: currentRole,
+                avatar: avatar
+            };
+
+            window.mockState.saveUser(user);
+
+            // Log Transaction outbox alert
+            window.mockState.logEmail(
+                email,
+                isRegister ? "FindIt Account Registration Confirmation" : "Security Alert: New Sign In Detected",
+                isRegister 
+                    ? `Hi ${name},\n\nYour academic account has been registered successfully. Welcome to FindIt.\n\nAccount Type: ${currentRole.toUpperCase()}`
+                    : `Hi ${name},\n\nWe detected a successful login to your FindIt Account on ${new Date().toLocaleString()}.\n\nIf this was not you, please contact University Security immediate.`
+            );
+
+            // Toast Alert
+            window.showToast("Authentication Successful", `Welcome back, ${name}!`);
+
+            // Delay redirect slightly for premium feel
+            setTimeout(() => {
+                if (currentRole === "admin") {
+                    window.location.href = "admin_portal.html";
+                } else {
+                    window.location.href = "dashboard.html";
+                }
+            }, 800);
+        }
+    </script>
+</body>
+</html>

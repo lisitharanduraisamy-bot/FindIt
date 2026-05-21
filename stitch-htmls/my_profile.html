@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIt - User Profile</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Shared Stylesheet -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        .profile-layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .profile-layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tab-button-bar {
+            display: flex;
+            border-bottom: 2px solid var(--color-surface-container);
+            margin-bottom: 20px;
+            gap: 24px;
+        }
+
+        .tab-btn {
+            padding: 12px 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-on-surface-variant);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .claim-card-row {
+            border: 1px solid var(--color-outline-variant);
+            border-radius: var(--rounded-md);
+            padding: 16px;
+            margin-bottom: 16px;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>FindIt Portal</h1>
+                    <span>University Systems</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="browse_items.html" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Browse Items</a></li>
+                    <li><a href="report_lost_item.html" class="nav-item"><i class="fa-solid fa-clipboard-question"></i> Report Lost</a></li>
+                    <li><a href="report_found_item.html" class="nav-item"><i class="fa-solid fa-hand-holding-hand"></i> Report Found</a></li>
+                    <li><a href="my_profile.html" class="nav-item active"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
+                    <li><a href="analytics_page.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="admin_portal.html" class="nav-item" style="display: none;"><i class="fa-solid fa-user-shield"></i> Security Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-divider"></div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 8px 16px;">
+                    <div class="avatar" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-primary-container); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">AM</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="user-name" style="font-size: 13px; font-weight: 600; color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Alex Morgan</div>
+                        <div class="user-email" style="font-size: 11px; color: var(--color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">student@university.edu</div>
+                    </div>
+                </div>
+                <a href="welcome_page.html" class="btn-footer-link" onclick="window.mockState.saveUser({name:'Alex Morgan',email:'student@university.edu',id:'2026-9876',role:'student',avatar:'AM'})"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--color-on-surface);">My Academic Account</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="badge-wrapper" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: var(--color-surface-container);">
+                        <i class="fa-solid fa-bell" style="color: var(--color-on-surface-variant); font-size: 16px;"></i>
+                    </div>
+                    
+                    <a href="my_profile.html">
+                        <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">AM</div>
+                    </a>
+                </div>
+            </header>
+            
+            <!-- Content Viewport -->
+            <main class="content-viewport">
+                <div class="profile-layout-grid">
+                    
+                    <!-- Left column: User profile card form -->
+                    <div class="card" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                        <div class="avatar profile-avatar" style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 28px; font-family: 'Outfit', sans-serif; box-shadow: var(--shadow-card); margin-bottom: 16px;">AM</div>
+                        <h3 class="user-display-name" style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--color-on-surface); margin-bottom: 2px;">Alex Morgan</h3>
+                        <span style="font-size: 11px; padding:2px 10px; background-color:var(--color-surface-container); color:var(--color-primary); border-radius:12px; font-weight:700; text-transform:uppercase;" id="role-badge">Student</span>
+                        
+                        <div class="sidebar-divider" style="width:100%; margin: 20px 0;"></div>
+
+                        <!-- Editable profile form -->
+                        <form style="width: 100%; display: flex; flex-direction: column; gap: 14px;" onsubmit="saveProfile(event)">
+                            <div class="form-group">
+                                <label class="form-label" for="profile-name">Full Name</label>
+                                <input class="form-input" type="text" id="profile-name" required value="Alex Morgan">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="profile-email">University Email</label>
+                                <input class="form-input" type="email" id="profile-email" required value="student@university.edu">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="profile-id">Student ID Number</label>
+                                <input class="form-input" type="text" id="profile-id" required value="2026-9876">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block" style="padding: 10px; margin-top: 8px;">Save Profile Settings</button>
+                        </form>
+                    </div>
+
+                    <!-- Right column: Claims and listings tabs -->
+                    <div class="card" style="padding: 24px;">
+                        <div class="tab-button-bar">
+                            <button class="tab-btn active" id="btn-tab-claims" onclick="switchTab('claims')"><i class="fa-solid fa-clock-rotate-left"></i> My Claims</button>
+                            <button class="tab-btn" id="btn-tab-reports" onclick="switchTab('reports')"><i class="fa-solid fa-clipboard-list"></i> My Reported Items</button>
+                        </div>
+
+                        <!-- Tab 1: Claims List -->
+                        <div id="tab-claims-content">
+                            <!-- Rendered dynamically -->
+                        </div>
+
+                        <!-- Tab 2: Reports List -->
+                        <div id="tab-reports-content" style="display: none;">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Shared Mockup State Engine -->
+    <script src="mock_state.js"></script>
+    <script>
+        let activeTab = "claims";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = window.mockState.getUser();
+            if (user) {
+                document.getElementById("profile-name").value = user.name || "Alex Morgan";
+                document.getElementById("profile-email").value = user.email || "student@university.edu";
+                document.getElementById("profile-id").value = user.id || "2026-9876";
+                document.querySelector(".user-display-name").textContent = user.name || "Alex Morgan";
+                
+                // Avatar text
+                document.querySelector(".profile-avatar").textContent = user.avatar || "AM";
+                
+                const roleBadge = document.getElementById("role-badge");
+                roleBadge.textContent = user.role;
+                if (user.role === 'admin') {
+                    roleBadge.style.backgroundColor = 'var(--color-status-pending-bg)';
+                    roleBadge.style.color = 'var(--color-status-pending)';
+                }
+            }
+
+            // Tabs toggle via query strings
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam === 'reports') {
+                switchTab('reports');
+            } else {
+                switchTab('claims');
+            }
+        });
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const btnClaims = document.getElementById("btn-tab-claims");
+            const btnReports = document.getElementById("btn-tab-reports");
+            const cntClaims = document.getElementById("tab-claims-content");
+            const cntReports = document.getElementById("tab-reports-content");
+
+            if (tabName === "claims") {
+                btnClaims.classList.add("active");
+                btnReports.classList.remove("active");
+                cntClaims.style.display = "block";
+                cntReports.style.display = "none";
+                renderClaims();
+            } else {
+                btnClaims.classList.remove("active");
+                btnReports.classList.add("active");
+                cntClaims.style.display = "none";
+                cntReports.style.display = "block";
+                renderReports();
+            }
+        }
+
+        function saveProfile(e) {
+            e.preventDefault();
+            const user = window.mockState.getUser();
+            
+            const newName = document.getElementById("profile-name").value.trim();
+            const newEmail = document.getElementById("profile-email").value.trim();
+            const newId = document.getElementById("profile-id").value.trim();
+            const avatar = newName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+
+            user.name = newName;
+            user.email = newEmail;
+            user.id = newId;
+            user.avatar = avatar;
+
+            window.mockState.saveUser(user);
+            
+            // Re-sync UI sidebar/header
+            document.querySelector(".user-display-name").textContent = newName;
+            document.querySelector(".profile-avatar").textContent = avatar;
+            
+            const headerAvatar = document.querySelector(".header-right .avatar");
+            if (headerAvatar) headerAvatar.textContent = avatar;
+
+            const footerName = document.querySelector(".sidebar-footer .user-name");
+            const footerEmail = document.querySelector(".sidebar-footer .user-email");
+            if (footerName) footerName.textContent = newName;
+            if (footerEmail) footerEmail.textContent = newEmail;
+
+            // Log email and show toast
+            window.mockState.logEmail(newEmail, "Account profile variables updated", `Hello ${newName},\n\nYour profile metadata was successfully updated in FindIt database.\n\nUpdated ID: ${newId}`);
+            window.showToast("Settings Updated", "Your profile configuration has been updated successfully.");
+        }
+
+        function renderClaims() {
+            const claims = window.mockState.getClaims();
+            const user = window.mockState.getUser();
+            
+            // Filter claims owned by user
+            const userClaims = claims.filter(c => c.claimantEmail === user.email);
+            const container = document.getElementById("tab-claims-content");
+
+            if (userClaims.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 48px 0; color: var(--color-outline);">
+                        <i class="fa-solid fa-hourglass-empty" style="font-size: 32px; margin-bottom: 12px;"></i>
+                        <div style="font-size: 14px; font-weight:600;">You haven't filed any ownership claims yet</div>
+                        <p style="font-size:12px; color:var(--color-outline); margin-top:4px;">Browse found items in the catalog to claim your belongings.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            userClaims.forEach(c => {
+                const badgeClass = c.status === 'pending' ? 'badge-pending' : (c.status === 'approved' ? 'badge-verified' : 'badge-lost');
+                const badgeLabel = c.status === 'pending' ? 'Pending Review' : (c.status === 'approved' ? 'Approved' : 'Rejected');
+                
+                html += `
+                    <div class="claim-card-row">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                            <div>
+                                <span class="badge ${badgeClass}" style="margin-bottom:6px;"><span class="badge-dot-indicator"></span>${badgeLabel}</span>
+                                <h4 style="font-family:'Outfit', sans-serif; font-size:15px; font-weight:700; color:var(--color-on-surface);">${c.itemTitle}</h4>
+                            </div>
+                            <span style="font-size:11px; font-weight:600; color:var(--color-outline); font-family:monospace;">${c.id}</span>
+                        </div>
+                        <p style="font-size:12px; color:var(--color-on-surface-variant); background-color:var(--color-surface-low); padding:10px; border-radius:var(--rounded-sm); border:1px solid var(--color-outline-variant); line-height:1.4; margin-bottom:10px;">
+                            <strong>Your Proof Provided:</strong> "${c.proof}"
+                        </p>
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--color-outline);">
+                            <div>Claim Date: ${c.date}</div>
+                            <div>Item Ref: <a href="item_details.html?id=${c.itemId}" style="font-weight:600; color:var(--color-primary);">${c.itemId}</a></div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderReports() {
+            const items = window.mockState.getItems();
+            const user = window.mockState.getUser();
+            
+            // Filter items reported by user
+            const userReports = items.filter(i => i.reporterEmail === user.email);
+            const container = document.getElementById("tab-reports-content");
+
+            if (userReports.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 48px 0; color: var(--color-outline);">
+                        <i class="fa-solid fa-clipboard-question" style="font-size: 32px; margin-bottom: 12px;"></i>
+                        <div style="font-size: 14px; font-weight:600;">You haven't reported any lost or found items yet</div>
+                        <p style="font-size:12px; color:var(--color-outline); margin-top:4px;">Use the sidebars "Report Lost" or "Report Found" wizards to register items.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            userReports.forEach(i => {
+                const badgeClass = i.status === 'lost' ? 'badge-lost' : (i.status === 'found' ? 'badge-found' : (i.status === 'pending' ? 'badge-pending' : 'badge-returned'));
+                const statusLabel = i.status === 'pending' ? 'Claim Pending' : (i.status === 'returned' ? 'Reclaimed' : i.status);
+                
+                html += `
+                    <div class="claim-card-row" style="display:flex; gap:16px; align-items:center;">
+                        <img src="${i.image || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=100&q=80'}" alt="" style="width:64px; height:64px; object-fit:cover; border-radius:var(--rounded-sm); border:1px solid var(--color-surface-container);">
+                        <div style="flex:1; min-width:0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <h4 style="font-size:14px; font-weight:700; color:var(--color-on-surface); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.title}</h4>
+                                <span class="badge ${badgeClass}"><span class="badge-dot-indicator"></span>${statusLabel}</span>
+                            </div>
+                            <div style="font-size:12px; color:var(--color-on-surface-variant); display:flex; gap:12px;">
+                                <span>Ref: <strong style="font-family:monospace;">${i.id}</strong></span>
+                                <span>Location: ${i.location}</span>
+                                <span>Date: ${i.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

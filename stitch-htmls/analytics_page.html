@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIt - Analytics & Insights</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Shared Stylesheet -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .charts-row-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .charts-row-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 800px) {
+            .charts-row-1 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-container-canvas {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>FindIt Portal</h1>
+                    <span>University Systems</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="browse_items.html" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Browse Items</a></li>
+                    <li><a href="report_lost_item.html" class="nav-item"><i class="fa-solid fa-clipboard-question"></i> Report Lost</a></li>
+                    <li><a href="report_found_item.html" class="nav-item"><i class="fa-solid fa-hand-holding-hand"></i> Report Found</a></li>
+                    <li><a href="my_profile.html" class="nav-item"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
+                    <li><a href="analytics_page.html" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="admin_portal.html" class="nav-item" style="display: none;"><i class="fa-solid fa-user-shield"></i> Security Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-divider"></div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 8px 16px;">
+                    <div class="avatar" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-primary-container); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">AM</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="user-name" style="font-size: 13px; font-weight: 600; color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Alex Morgan</div>
+                        <div class="user-email" style="font-size: 11px; color: var(--color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">student@university.edu</div>
+                    </div>
+                </div>
+                <a href="welcome_page.html" class="btn-footer-link" onclick="window.mockState.saveUser({name:'Alex Morgan',email:'student@university.edu',id:'2026-9876',role:'student',avatar:'AM'})"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--color-on-surface);">System Analytics</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="badge-wrapper" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: var(--color-surface-container);">
+                        <i class="fa-solid fa-bell" style="color: var(--color-on-surface-variant); font-size: 16px;"></i>
+                    </div>
+                    
+                    <a href="my_profile.html">
+                        <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">AM</div>
+                    </a>
+                </div>
+            </header>
+            
+            <!-- Content Viewport -->
+            <main class="content-viewport">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; color: var(--color-on-surface);">Academic Recovery Insights</h2>
+                    <p style="font-size: 13px; color: var(--color-on-surface-variant);">Aggregated data metrics matching campus recovery records</p>
+                </div>
+
+                <!-- Numerical Cards Row -->
+                <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                    <div class="card">
+                        <h4 style="font-size:12px; font-weight:600; color:var(--color-outline); margin-bottom:6px;">Recovery Rate</h4>
+                        <div style="font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:var(--color-status-verified);">92.4%</div>
+                        <div style="font-size:10px; color:var(--color-outline); margin-top:4px;"><i class="fa-solid fa-arrow-trend-up"></i> +1.2% this semester</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h4 style="font-size:12px; font-weight:600; color:var(--color-outline); margin-bottom:6px;">Avg Matching Time</h4>
+                        <div style="font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:var(--color-primary);">18.2 Hrs</div>
+                        <div style="font-size:10px; color:var(--color-outline); margin-top:4px;"><i class="fa-solid fa-bolt"></i> Under 24 hour average</div>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="font-size:12px; font-weight:600; color:var(--color-outline); margin-bottom:6px;">Total Database Listings</h4>
+                        <div style="font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:var(--color-on-surface);" id="analytics-total-listings">0</div>
+                        <div style="font-size:10px; color:var(--color-outline); margin-top:4px;">Synchronized in real-time</div>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="font-size:12px; font-weight:600; color:var(--color-outline); margin-bottom:6px;">Clerk Verification Load</h4>
+                        <div style="font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:var(--color-status-pending);" id="analytics-pending-claims">0</div>
+                        <div style="font-size:10px; color:var(--color-outline); margin-top:4px;">Claims awaiting review</div>
+                    </div>
+                </section>
+
+                <!-- Charts Layout Grid Row 1 -->
+                <div class="charts-row-1">
+                    <!-- Left: Category Doughnut Chart -->
+                    <div class="card" style="padding: 24px;">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--color-on-surface); margin-bottom: 16px; border-bottom: 1px solid var(--color-surface-container); padding-bottom: 8px;">Category Distribution</h3>
+                        <div class="chart-container-canvas">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Right: Recovery Status Pie Chart -->
+                    <div class="card" style="padding: 24px;">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--color-on-surface); margin-bottom: 16px; border-bottom: 1px solid var(--color-surface-container); padding-bottom: 8px;">Recovery Verification Stats</h3>
+                        <div class="chart-container-canvas">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Layout Grid Row 2 -->
+                <div class="charts-row-2">
+                    <!-- Hotspots Bar Chart -->
+                    <div class="card" style="padding: 24px;">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--color-on-surface); margin-bottom: 16px; border-bottom: 1px solid var(--color-surface-container); padding-bottom: 8px;">Misplacement Hotspot Areas</h3>
+                        <div class="chart-container-canvas" style="height:280px;">
+                            <canvas id="hotspotsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Shared Mockup State Engine -->
+    <script src="mock_state.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            renderAnalytics();
+        });
+
+        function renderAnalytics() {
+            const items = window.mockState.getItems();
+            const claims = window.mockState.getClaims();
+
+            // Set aggregate statistics numbers
+            document.getElementById("analytics-total-listings").textContent = items.length;
+            const pendingClaims = claims.filter(c => c.status === 'pending').length;
+            document.getElementById("analytics-pending-claims").textContent = pendingClaims;
+
+            // 1. Calculate Categories Breakdown
+            const cats = { "Electronics": 0, "Accessories": 0, "Personal Effects": 0, "Bottles/Containers": 0 };
+            items.forEach(i => {
+                if (cats[i.category] !== undefined) {
+                    cats[i.category]++;
+                }
+            });
+
+            // 2. Calculate Status Breakdown
+            const stats = { "Lost": 0, "Found": 0, "Pending Claim": 0, "Reclaimed": 0 };
+            items.forEach(i => {
+                if (i.status === "lost") stats["Lost"]++;
+                else if (i.status === "found") stats["Found"]++;
+                else if (i.status === "pending") stats["Pending Claim"]++;
+                else if (i.status === "returned") stats["Reclaimed"]++;
+            });
+
+            // 3. Calculate Location Hotspots
+            const locs = {
+                "Student Union Lounge": 0,
+                "Library Study Room B": 0,
+                "Science Hall Room 302": 0,
+                "Campus Recreation Center (Gym)": 0,
+                "Engineering Quad Grass Area": 0
+            };
+            items.forEach(i => {
+                if (locs[i.location] !== undefined) {
+                    locs[i.location]++;
+                }
+            });
+
+            // -- INITIALIZE CHARTS --
+            
+            // Category Doughnut Chart
+            new Chart(document.getElementById('categoryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(cats),
+                    datasets: [{
+                        data: Object.values(cats),
+                        backgroundColor: ['#2563eb', '#dae2fd', '#737686', '#0b1c30'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+
+            // Status Pie Chart
+            new Chart(document.getElementById('statusChart'), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(stats),
+                    datasets: [{
+                        data: Object.values(stats),
+                        backgroundColor: ['#ef4444', '#2563eb', '#d97706', '#16a34a'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+
+            // Hotspots Horizontal Bar Chart
+            new Chart(document.getElementById('hotspotsChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(locs),
+                    datasets: [{
+                        label: 'Misplaced Items Count',
+                        data: Object.values(locs),
+                        backgroundColor: 'rgba(37, 99, 235, 0.85)',
+                        hoverBackgroundColor: '#2563eb',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { stepSize: 1, font: { family: 'Inter', size: 10 } } },
+                        y: { ticks: { font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

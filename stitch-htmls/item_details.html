@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIt - Item Details</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Shared Stylesheet -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        .split-details-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .split-details-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .gallery-main {
+            background-color: #ffffff;
+            border-radius: var(--rounded-lg);
+            border: 1px solid var(--color-surface-container);
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 16px;
+            aspect-ratio: 4/3;
+        }
+
+        .gallery-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-sm) 0 var(--spacing-md) 0;
+        }
+
+        .specs-table tr {
+            border-bottom: 1px solid var(--color-surface-container);
+        }
+
+        .specs-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .specs-table td {
+            padding: 12px 0;
+            font-size: 13px;
+        }
+
+        .specs-label {
+            font-weight: 600;
+            color: var(--color-on-surface-variant);
+            width: 140px;
+        }
+
+        .specs-value {
+            color: var(--color-on-surface);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>FindIt Portal</h1>
+                    <span>University Systems</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="browse_items.html" class="nav-item active"><i class="fa-solid fa-magnifying-glass"></i> Browse Items</a></li>
+                    <li><a href="report_lost_item.html" class="nav-item"><i class="fa-solid fa-clipboard-question"></i> Report Lost</a></li>
+                    <li><a href="report_found_item.html" class="nav-item"><i class="fa-solid fa-hand-holding-hand"></i> Report Found</a></li>
+                    <li><a href="my_profile.html" class="nav-item"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
+                    <li><a href="analytics_page.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="admin_portal.html" class="nav-item" style="display: none;"><i class="fa-solid fa-user-shield"></i> Security Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-divider"></div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 8px 16px;">
+                    <div class="avatar" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-primary-container); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">AM</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="user-name" style="font-size: 13px; font-weight: 600; color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Alex Morgan</div>
+                        <div class="user-email" style="font-size: 11px; color: var(--color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">student@university.edu</div>
+                    </div>
+                </div>
+                <a href="welcome_page.html" class="btn-footer-link" onclick="window.mockState.saveUser({name:'Alex Morgan',email:'student@university.edu',id:'2026-9876',role:'student',avatar:'AM'})"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <a href="browse_items.html" class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;"><i class="fa-solid fa-arrow-left"></i> Back to Catalog</a>
+                </div>
+                
+                <div class="header-right">
+                    <div class="badge-wrapper" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: var(--color-surface-container);">
+                        <i class="fa-solid fa-bell" style="color: var(--color-on-surface-variant); font-size: 16px;"></i>
+                    </div>
+                    
+                    <a href="my_profile.html">
+                        <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">AM</div>
+                    </a>
+                </div>
+            </header>
+            
+            <!-- Content Viewport -->
+            <main class="content-viewport">
+                <div class="split-details-layout">
+                    
+                    <!-- Left: Gallery Pane -->
+                    <div style="width: 100%;">
+                        <div class="gallery-main">
+                            <img id="detail-image" src="" alt="Item Image">
+                        </div>
+                        
+                        <!-- Extra guidelines box -->
+                        <div class="card" style="padding: 16px; border: 1px dashed var(--color-outline-variant); background-color: var(--color-surface-low);">
+                            <h4 style="font-size: 13px; font-weight:700; color:var(--color-on-surface); display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-shield-halved" style="color:var(--color-primary);"></i> Ownership Verification Policy</h4>
+                            <p style="font-size: 11px; color: var(--color-on-surface-variant); line-height: 1.5; margin-top: 6px;">
+                                Reclaiming items requires presenting a valid University Student or Faculty ID card, and satisfying security clerks with specific item descriptions not listed in public photos (e.g. passwords, unique marks).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Info Spec Sheet -->
+                    <div class="card" style="padding: 28px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span id="detail-id" style="font-size: 11px; font-weight:600; color:var(--color-outline); font-family:monospace;">ITM-XXXX</span>
+                                    <span id="detail-badge" class="badge">Status</span>
+                                </div>
+                                <h2 id="detail-title" style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; color: var(--color-on-surface); line-height: 1.3;">Item Title Placeholder</h2>
+                            </div>
+                        </div>
+
+                        <p id="detail-description" style="font-size: 13px; color: var(--color-on-surface-variant); line-height: 1.6; margin-bottom: 16px; border-bottom: 1px solid var(--color-surface-container); padding-bottom: 16px;">
+                            Detailed description placeholder...
+                        </p>
+
+                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--color-on-surface); margin-bottom: 8px;">Specifications</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td class="specs-label">Category</td>
+                                <td class="specs-value" id="detail-category">Electronics</td>
+                            </tr>
+                            <tr>
+                                <td class="specs-label">Date Reported</td>
+                                <td class="specs-value" id="detail-date">2026-05-20</td>
+                            </tr>
+                            <tr>
+                                <td class="specs-label">Reported Location</td>
+                                <td class="specs-value" id="detail-location">Student Union Hall</td>
+                            </tr>
+                            <tr>
+                                <td class="specs-label">Registrar Name</td>
+                                <td class="specs-value" id="detail-reporter">Campus Clerk</td>
+                            </tr>
+                        </table>
+
+                        <div id="action-cta-container" style="margin-top: var(--spacing-md);">
+                            <!-- Dynamic CTA button based on item state -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Shared Mockup State Engine -->
+    <script src="mock_state.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemId = urlParams.get('id');
+            const items = window.mockState.getItems();
+
+            let item = items.find(i => i.id === itemId);
+            if (!item) {
+                // Default to first item if not found
+                item = items[0];
+            }
+
+            if (item) {
+                renderDetails(item);
+            } else {
+                alert("Error: No items found in the system catalog database.");
+            }
+        });
+
+        function renderDetails(item) {
+            document.getElementById("detail-image").src = item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80";
+            document.getElementById("detail-id").textContent = item.id;
+            document.getElementById("detail-title").textContent = item.title;
+            document.getElementById("detail-description").textContent = item.description;
+            document.getElementById("detail-category").textContent = item.category;
+            document.getElementById("detail-date").textContent = item.date;
+            document.getElementById("detail-location").textContent = item.location;
+            document.getElementById("detail-reporter").textContent = item.reporter;
+
+            // Render status Badge
+            const badge = document.getElementById("detail-badge");
+            badge.className = "badge";
+            const badgeClass = item.status === 'lost' ? 'badge-lost' : (item.status === 'found' ? 'badge-found' : (item.status === 'pending' ? 'badge-pending' : 'badge-returned'));
+            badge.classList.add(badgeClass);
+            
+            const statusLabel = item.status === 'pending' ? 'Claim Pending' : (item.status === 'returned' ? 'Reclaimed' : item.status);
+            badge.innerHTML = `<span class="badge-dot-indicator"></span>${statusLabel}`;
+
+            // Render CTA Button
+            const ctaContainer = document.getElementById("action-cta-container");
+            const user = window.mockState.getUser();
+
+            if (item.status === "found" && item.type === "found") {
+                ctaContainer.innerHTML = `
+                    <a href="submit_claim.html?id=${item.id}" class="btn btn-primary btn-block" style="padding: 12px; font-size:14px; text-transform:uppercase; letter-spacing:0.02em;">
+                        <i class="fa-solid fa-file-pen"></i> Submit Ownership Claim
+                    </a>
+                `;
+            } else if (item.status === "pending") {
+                ctaContainer.innerHTML = `
+                    <div style="background-color: var(--color-surface-container); border: 1px solid var(--color-outline-variant); color: var(--color-status-pending); border-radius: var(--rounded-default); padding: 12px; text-align: center; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <i class="fa-solid fa-hourglass-half"></i> Under Active Security Verification Review
+                    </div>
+                `;
+            } else if (item.status === "returned") {
+                ctaContainer.innerHTML = `
+                    <div style="background-color: rgba(22, 163, 74, 0.1); border: 1px solid var(--color-status-verified); color: var(--color-status-verified); border-radius: var(--rounded-default); padding: 12px; text-align: center; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <i class="fa-solid fa-circle-check"></i> Reclaimed & Successfully Returned to Owner
+                    </div>
+                `;
+            } else if (item.status === "lost" && item.type === "lost") {
+                ctaContainer.innerHTML = `
+                    <button class="btn btn-primary btn-block" style="padding: 12px;" onclick="contactReporter('${item.reporter}', '${item.reporterEmail}')">
+                        <i class="fa-solid fa-envelope"></i> Send Contact Message to Reporter
+                    </button>
+                `;
+            }
+        }
+
+        function contactReporter(name, email) {
+            const user = window.mockState.getUser();
+            const msg = prompt(`Enter message to send to reporter "${name}" (${email}):`, `Hi ${name.split(" ")[0]}, I think I might have spotted your lost item. Can we meet up?`);
+            if (msg) {
+                window.mockState.logEmail(
+                    email,
+                    "Message Regarding Your Lost Item listing",
+                    `Hi ${name},\n\nAnother user (${user.name}, email: ${user.email}) has reached out with comments regarding your reported lost listing.\n\nMessage Detail:\n"${msg}"`
+                );
+                window.showToast("Message Transmitted", `Your note has been successfully emailed to ${name}!`);
+            }
+        }
+    </script>
+</body>
+</html>

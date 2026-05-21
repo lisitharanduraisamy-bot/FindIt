@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title Tag -->
+    <title>FindIt - Lost Today. Found Tomorrow.</title>
+    
+    <!-- Meta Description for SEO -->
+    <meta name="description" content="FindIt is the official campus lost-and-found portal. Easily report lost items, log found objects, submit claims, and track returns at your university.">
+    
+    <!-- Fonts: Outfit and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Charts: Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- SPA App Shell -->
+    <div id="app-container" class="app-layout">
+        
+        <!-- Persistent Sidebar (Google Stitch Style) -->
+        <aside id="app-sidebar" class="sidebar hidden">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>FindIt Portal</h1>
+                    <span>University Management</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="#dashboard" id="nav-dashboard" class="nav-item active">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#browse" id="nav-browse" class="nav-item">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <span>Browse Items</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#profile" id="nav-profile" class="nav-item">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>My Reports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#analytics" id="nav-analytics" class="nav-item">
+                            <i class="fa-solid fa-chart-simple"></i>
+                            <span>Statistics</span>
+                        </a>
+                    </li>
+                    <li id="admin-nav-wrapper" class="hidden">
+                        <a href="#admin" id="nav-admin" class="nav-item">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>Admin</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button id="btn-sidebar-report" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span>Report Found Item</span>
+                </button>
+                <div class="sidebar-divider"></div>
+                <button id="btn-settings-toggle" class="btn-footer-link">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Settings</span>
+                </button>
+                <button id="btn-help-toggle" class="btn-footer-link">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span>Help Center</span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Dynamic Body Wrapper -->
+        <div class="main-wrapper">
+            
+            <!-- Global App Header -->
+            <header id="app-header" class="main-header hidden">
+                <div class="header-left">
+                    <!-- Mobile Hamburger -->
+                    <button id="mobile-nav-toggle" class="btn-icon">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <!-- Quick Global Search -->
+                    <div class="header-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="global-search-input" placeholder="Search lost items...">
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <!-- Notifications Dropdown -->
+                    <div class="header-notification">
+                        <button id="btn-notification-bell" class="btn-icon badge-wrapper">
+                            <i class="fa-regular fa-bell"></i>
+                            <span id="unread-notification-count" class="badge-dot hidden"></span>
+                        </button>
+                        <div id="notification-dropdown" class="dropdown-panel hidden">
+                            <div class="dropdown-header">
+                                <h3>Notifications</h3>
+                                <button id="btn-mark-all-read" class="btn-link">Mark all read</button>
+                            </div>
+                            <div id="notification-list-container" class="dropdown-content">
+                                <div class="empty-state">No new alerts.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Avatar & Profile Summary -->
+                    <div id="user-header-menu" class="user-menu-wrapper">
+                        <button id="btn-user-profile" class="user-avatar-btn">
+                            <span id="user-avatar-initials">S</span>
+                            <img id="user-avatar-image" class="hidden" src="" alt="Avatar">
+                        </button>
+                        <div id="user-dropdown" class="dropdown-panel hidden">
+                            <div class="user-dropdown-header">
+                                <span id="user-dropdown-name">Security Staff</span>
+                                <span id="user-dropdown-email">security@university.edu</span>
+                            </div>
+                            <div class="dropdown-content">
+                                <a href="#profile" class="dropdown-item"><i class="fa-regular fa-user"></i> My Profile</a>
+                                <div class="dropdown-divider"></div>
+                                <button id="btn-logout-submit" class="dropdown-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content Container for SPA Routing -->
+            <main id="main-content" class="content-viewport">
+                <!-- App view scripts will inject layout HTML here -->
+                <div class="app-spinner-wrapper">
+                    <div class="spinner"></div>
+                </div>
+            </main>
+            
+        </div>
+    </div>
+
+    <!-- ==========================================
+         REPORT ITEM MODAL
+         ========================================== -->
+    <div id="modal-report-item" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="report-modal-title">Report Found Item</h2>
+                <button class="modal-close btn-icon" id="btn-close-report-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form-report-item">
+                    <!-- Radio choice between Lost and Found -->
+                    <div class="form-group">
+                        <label class="form-label">Report Type</label>
+                        <div class="form-radio-group">
+                            <label class="radio-card">
+                                <input type="radio" name="report_type" value="lost" id="radio-type-lost">
+                                <div class="radio-content">
+                                    <i class="fa-solid fa-search"></i>
+                                    <span>Lost Item</span>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="report_type" value="found" id="radio-type-found" checked>
+                                <div class="radio-content">
+                                    <i class="fa-solid fa-box-open"></i>
+                                    <span>Found Item</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-item-name" class="form-label">Item Name</label>
+                        <input type="text" id="report-item-name" required placeholder="e.g., Blue Hydroflask, Dell XPS 13" class="form-input">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="report-category" class="form-label">Category</label>
+                            <select id="report-category" class="form-input" required>
+                                <option value="" disabled selected>Select a category</option>
+                                <!-- Categories dynamically loaded -->
+                            </select>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="report-date" id="label-report-date" class="form-label">Date Found</label>
+                            <input type="date" id="report-date" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-location" id="label-report-location" class="form-label">Location Found</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <input type="text" id="report-location" class="form-input icon-padding" required placeholder="e.g., Library 2nd Floor, Science Bldg">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-description" class="form-label">Description & Identifying Marks</label>
+                        <textarea id="report-description" class="form-textarea" required placeholder="Describe the item in detail. Mention any scratches, stickers, or unique features..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Upload Image (Optional)</label>
+                        <div class="upload-dropzone" id="report-image-dropzone">
+                            <input type="file" id="report-image-file" class="hidden-file-input" accept="image/*">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <div class="dropzone-text">
+                                <span class="link-text">Click to upload</span> or drag and drop
+                            </div>
+                            <span class="sub-text">SVG, PNG, JPG or GIF (max. 5MB)</span>
+                            <div id="dropzone-preview" class="hidden">
+                                <span id="preview-filename">image.png</span>
+                                <button type="button" id="btn-remove-preview" class="btn-link text-danger">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Details (Visible for Lost Reports only) -->
+                    <div id="contact-info-section" class="hidden border-top pt-3">
+                        <h3 class="section-title mb-2">Contact Information</h3>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label for="contact-name" class="form-label">Your Name</label>
+                                <input type="text" id="contact-name" class="form-input" placeholder="Alex Student">
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="contact-email" class="form-label">Email Address</label>
+                                <input type="email" id="contact-email" class="form-input" placeholder="alex@university.edu">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions border-top pt-3">
+                        <button type="button" class="btn btn-outline" id="btn-cancel-report">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-report">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         SETTINGS / CONNECTION MODAL
+         ========================================== -->
+    <div id="modal-settings" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Supabase Credentials Manager</h2>
+                <button class="modal-close btn-icon" id="btn-close-settings-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <div>
+                        FindIt is running in **Mock Fallback Mode** with high-fidelity seed data. Paste your real Supabase credentials to sync live auth, Postgres records, and file uploads.
+                    </div>
+                </div>
+                <form id="form-settings">
+                    <div class="form-group">
+                        <label for="settings-supabase-url" class="form-label">Supabase API URL</label>
+                        <input type="text" id="settings-supabase-url" class="form-input" placeholder="https://yourproject.supabase.co">
+                    </div>
+                    <div class="form-group">
+                        <label for="settings-supabase-key" class="form-label">Supabase Anonymous Anon Key</label>
+                        <input type="password" id="settings-supabase-key" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                    </div>
+                    <div class="form-actions mt-3">
+                        <button type="button" id="btn-clear-settings" class="btn btn-outline text-danger">Reset to Mock Mode</button>
+                        <button type="submit" class="btn btn-primary">Connect Live DB</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         HELP CENTER MODAL
+         ========================================== -->
+    <div id="modal-help" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Help & Support Center</h2>
+                <button class="modal-close btn-icon" id="btn-close-help-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="accordion-item">
+                        <h4 class="accordion-title">How does the claiming process work?</h4>
+                        <p class="accordion-content">
+                            When you locate a found item in the database, click "Submit Claim Request". You must provide specific details (such as serial numbers, unique scratches, or files inside a laptop) to verify ownership. The campus security admin team will review your claim and update its status.
+                        </p>
+                    </div>
+                    <div class="accordion-item">
+                        <h4 class="accordion-title">Where do I collect approved items?</h4>
+                        <p class="accordion-content">
+                            Approved claims can be collected at the **Central Campus Security Desk** located in the Student Union building (Room 102), open Monday to Friday, 8:00 AM - 6:00 PM. Please bring your student ID and a copy of the Claim Approval notification.
+                        </p>
+                    </div>
+                    <div class="accordion-item">
+                        <h4 class="accordion-title">Who is allowed to verify claims?</h4>
+                        <p class="accordion-content">
+                            Only authenticated Campus Security officers and platform administrators have elevated permissions to review, approve, or reject ownership claims.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         EMAIL TRANSACTIONAL SIMULATOR (DEV ONLY)
+         ========================================== -->
+    <div id="dev-email-simulator" class="email-outbox-collapsed">
+        <div class="simulator-bar" id="email-simulator-bar">
+            <div class="title-with-badge">
+                <i class="fa-solid fa-envelope-open-text"></i>
+                <span>Email Outbox Simulator (Dev Mode)</span>
+                <span id="email-outbox-badge" class="count-badge hidden">0</span>
+            </div>
+            <button id="btn-toggle-outbox" class="btn-icon">
+                <i class="fa-solid fa-chevron-up" id="outbox-toggle-icon"></i>
+            </button>
+        </div>
+        <div class="simulator-body hidden" id="email-simulator-body">
+            <div class="outbox-list" id="email-outbox-list">
+                <div class="empty-state">No email notifications sent in this session yet. Submit or update a claim to see generated templates.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-wrapper"></div>
+
+    <!-- Supabase Client JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Modular Application Logic Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIt - Report Found Item</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Shared Stylesheet -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        .wizard-container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .dropzone-box {
+            border: 2px dashed var(--color-outline-variant);
+            border-radius: var(--rounded-md);
+            padding: 32px var(--spacing-md);
+            text-align: center;
+            background-color: var(--color-surface-low);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .dropzone-box:hover {
+            border-color: var(--color-primary);
+            background-color: var(--color-surface-container);
+        }
+
+        .form-toggle-pill {
+            display: flex;
+            background-color: var(--color-surface-container);
+            border-radius: var(--rounded-full);
+            padding: 4px;
+            width: 100%;
+            margin-bottom: 24px;
+            border: 1px solid var(--color-outline-variant);
+        }
+
+        .toggle-tab-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: var(--rounded-full);
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--color-on-surface-variant);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-tab-btn.active {
+            background-color: #ffffff;
+            color: var(--color-primary);
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>FindIt Portal</h1>
+                    <span>University Systems</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="browse_items.html" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Browse Items</a></li>
+                    <li><a href="report_lost_item.html" class="nav-item"><i class="fa-solid fa-clipboard-question"></i> Report Lost</a></li>
+                    <li><a href="report_found_item.html" class="nav-item active"><i class="fa-solid fa-hand-holding-hand"></i> Report Found</a></li>
+                    <li><a href="my_profile.html" class="nav-item"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
+                    <li><a href="analytics_page.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="admin_portal.html" class="nav-item" style="display: none;"><i class="fa-solid fa-user-shield"></i> Security Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-divider"></div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 8px 16px;">
+                    <div class="avatar" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-primary-container); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">AM</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="user-name" style="font-size: 13px; font-weight: 600; color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Alex Morgan</div>
+                        <div class="user-email" style="font-size: 11px; color: var(--color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">student@university.edu</div>
+                    </div>
+                </div>
+                <a href="welcome_page.html" class="btn-footer-link" onclick="window.mockState.saveUser({name:'Alex Morgan',email:'student@university.edu',id:'2026-9876',role:'student',avatar:'AM'})"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--color-on-surface);">Report Found Belonging</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="badge-wrapper" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: var(--color-surface-container);">
+                        <i class="fa-solid fa-bell" style="color: var(--color-on-surface-variant); font-size: 16px;"></i>
+                    </div>
+                    
+                    <a href="my_profile.html">
+                        <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">AM</div>
+                    </a>
+                </div>
+            </header>
+            
+            <!-- Content Viewport -->
+            <main class="content-viewport">
+                <div class="wizard-container">
+                    
+                    <!-- Listing Type Switcher (Tonal pill) -->
+                    <div class="form-toggle-pill">
+                        <div class="toggle-tab-btn" onclick="window.location.href='report_lost_item.html'">
+                            <i class="fa-solid fa-clipboard-question"></i> I Lost Something
+                        </div>
+                        <div class="toggle-tab-btn active">
+                            <i class="fa-solid fa-hand-holding-hand"></i> I Found Something
+                        </div>
+                    </div>
+
+                    <!-- Main Form Wizard Card -->
+                    <form class="card" style="padding: 32px;" onsubmit="handleFormSubmit(event)">
+                        
+                        <!-- Upload Section -->
+                        <div class="form-group" style="margin-bottom: 24px;">
+                            <label class="form-label">Upload Found Item Photo <span style="color:var(--color-error)">*</span></label>
+                            <div class="dropzone-box" onclick="simulatePhotoUpload()">
+                                <i class="fa-solid fa-camera-retro" style="font-size: 32px; color: var(--color-outline); margin-bottom: 8px;"></i>
+                                <div style="font-size: 13px; font-weight: 700; color: var(--color-on-surface);">Click to snap or upload item photo</div>
+                                <div style="font-size: 11px; color: var(--color-outline); margin-top: 4px;">Clear photos of the item's outer shell significantly accelerate owner matching (JPG, PNG max 5MB)</div>
+                            </div>
+                            
+                            <!-- Attached preview details -->
+                            <div id="photo-preview-box" style="display:none; align-items:center; gap:12px; padding:10px; border:1px solid var(--color-outline-variant); border-radius:var(--rounded-sm); background-color:#ffffff;">
+                                <img id="attached-img-tag" src="" alt="Thumbnail" style="width:50px; height:50px; object-fit:cover; border-radius:var(--rounded-sm);">
+                                <div style="flex:1;">
+                                    <div id="attached-name-text" style="font-size:12px; font-weight:700; color:var(--color-on-surface);">image_9281.jpg</div>
+                                    <div style="font-size:10px; color:var(--color-outline);">Image attached successfully</div>
+                                </div>
+                                <button type="button" class="btn-icon" style="color:var(--color-error); width:24px; height:24px;" onclick="removeAttachedPhoto()"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Info details row -->
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label class="form-label" for="found-title">Item Title / Name <span style="color:var(--color-error)">*</span></label>
+                                <input class="form-input" type="text" id="found-title" required placeholder="e.g. Cobalt Blue Water Bottle, Dorm Keys">
+                            </div>
+                            <div class="form-group col-6">
+                                <label class="form-label" for="found-category">Category <span style="color:var(--color-error)">*</span></label>
+                                <select id="found-category" class="form-input" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Accessories">Accessories</option>
+                                    <option value="Personal Effects">Personal Effects</option>
+                                    <option value="Bottles/Containers">Bottles/Containers</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label class="form-label" for="found-location">Specific Location Found <span style="color:var(--color-error)">*</span></label>
+                                <select id="found-location" class="form-input" required>
+                                    <option value="">Select Location</option>
+                                    <option value="Student Union Lounge">Student Union Lounge</option>
+                                    <option value="Library Study Room B">Library Study Room B</option>
+                                    <option value="Science Hall Room 302">Science Hall Room 302</option>
+                                    <option value="Campus Recreation Center (Gym)">Campus Recreation Center (Gym)</option>
+                                    <option value="Engineering Quad Grass Area">Engineering Quad Grass Area</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label class="form-label" for="found-date">Date Found <span style="color:var(--color-error)">*</span></label>
+                                <input class="form-input" type="date" id="found-date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="found-desc">Distinct Description & Handover Details <span style="color:var(--color-error)">*</span></label>
+                            <textarea class="form-textarea" id="found-desc" required placeholder="Describe specific details, markings, brand names, colors, or condition. If you handed it over to campus safety or left it with a department clerk, clarify that here!"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="found-handover">Item Storage Action</label>
+                            <select id="found-handover" class="form-input">
+                                <option value="Kept with me">Kept with me (coordinating pick up)</option>
+                                <option value="Handed to Student Union Desk 102">Handed to Campus Security (Student Union Desk 102)</option>
+                                <option value="Left with building department admin">Left with building department admin</option>
+                            </select>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; border-top:1px solid var(--color-surface-container); padding-top:20px;">
+                            <button type="button" class="btn btn-outline" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 28px;">Register Found Listing</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Shared Mockup State Engine -->
+    <script src="mock_state.js"></script>
+    <script>
+        let mockPhotoAttached = false;
+        let mockPhotoUrl = "";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Set date to today
+            document.getElementById("found-date").value = new Date().toISOString().substring(0, 10);
+        });
+
+        function simulatePhotoUpload() {
+            if (mockPhotoAttached) return;
+            
+            const samples = [
+                { name: "blue_hydro_flask.jpg", url: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=300&q=80" },
+                { name: "carabiner_keys.jpg", url: "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=300&q=80" },
+                { name: "brown_wallet.jpg", url: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=300&q=80" }
+            ];
+            const chosen = samples[Math.floor(Math.random() * samples.length)];
+            
+            document.getElementById("attached-img-tag").src = chosen.url;
+            document.getElementById("attached-name-text").textContent = chosen.name;
+            document.getElementById("photo-preview-box").style.display = "flex";
+            
+            mockPhotoUrl = chosen.url;
+            mockPhotoAttached = true;
+            window.showToast("Photo Attached", `"${chosen.name}" successfully added to found report.`);
+        }
+
+        function removeAttachedPhoto() {
+            document.getElementById("photo-preview-box").style.display = "none";
+            mockPhotoAttached = false;
+            mockPhotoUrl = "";
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            if (!mockPhotoAttached) {
+                alert("Please attach a found item photo to submit the listing.");
+                return;
+            }
+
+            const user = window.mockState.getUser();
+            const title = document.getElementById("found-title").value.trim();
+            const category = document.getElementById("found-category").value;
+            const location = document.getElementById("found-location").value;
+            const date = document.getElementById("found-date").value;
+            const desc = document.getElementById("found-desc").value.trim();
+            const handover = document.getElementById("found-handover").value;
+
+            const itemPayload = {
+                title: title,
+                category: category,
+                type: "found",
+                status: "found",
+                location: location,
+                date: date,
+                description: desc + ` [Storage Action: ${handover}]`,
+                reporter: user.name,
+                reporterEmail: user.email,
+                image: mockPhotoUrl
+            };
+
+            const newItem = window.mockState.addItem(itemPayload);
+            window.showToast("Found Item Registered", `Successfully registered "${title}" into the system catalog!`);
+            
+            // Check for immediate matching system alerts
+            window.mockState.addNotification("New Listing Added", `Your found report for ${title} is now active.`);
+
+            setTimeout(() => {
+                window.location.href = `browse_items.html?type=found`;
+            }, 800);
+        }
+    </script>
+</body>
+</html>

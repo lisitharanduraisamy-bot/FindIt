@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIt - Submit Claim</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Shared Stylesheet -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        .split-claim-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.8fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        @media (max-width: 850px) {
+            .split-claim-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dropzone-box {
+            border: 2px dashed var(--color-outline-variant);
+            border-radius: var(--rounded-md);
+            padding: var(--spacing-md);
+            text-align: center;
+            background-color: var(--color-surface-low);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dropzone-box:hover {
+            border-color: var(--color-primary);
+            background-color: var(--color-surface-container);
+        }
+
+        .file-list-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border: 1px solid var(--color-outline-variant);
+            border-radius: var(--rounded-sm);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>FindIt Portal</h1>
+                    <span>University Systems</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="browse_items.html" class="nav-item active"><i class="fa-solid fa-magnifying-glass"></i> Browse Items</a></li>
+                    <li><a href="report_lost_item.html" class="nav-item"><i class="fa-solid fa-clipboard-question"></i> Report Lost</a></li>
+                    <li><a href="report_found_item.html" class="nav-item"><i class="fa-solid fa-hand-holding-hand"></i> Report Found</a></li>
+                    <li><a href="my_profile.html" class="nav-item"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
+                    <li><a href="analytics_page.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="admin_portal.html" class="nav-item" style="display: none;"><i class="fa-solid fa-user-shield"></i> Security Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-divider"></div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 8px 16px;">
+                    <div class="avatar" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-primary-container); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">AM</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="user-name" style="font-size: 13px; font-weight: 600; color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Alex Morgan</div>
+                        <div class="user-email" style="font-size: 11px; color: var(--color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">student@university.edu</div>
+                    </div>
+                </div>
+                <a href="welcome_page.html" class="btn-footer-link" onclick="window.mockState.saveUser({name:'Alex Morgan',email:'student@university.edu',id:'2026-9876',role:'student',avatar:'AM'})"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <a href="item_details.html" id="back-to-details" class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;"><i class="fa-solid fa-chevron-left"></i> Back to Details</a>
+                </div>
+                
+                <div class="header-right">
+                    <div class="badge-wrapper" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: var(--color-surface-container);">
+                        <i class="fa-solid fa-bell" style="color: var(--color-on-surface-variant); font-size: 16px;"></i>
+                    </div>
+                    
+                    <a href="my_profile.html">
+                        <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">AM</div>
+                    </a>
+                </div>
+            </header>
+            
+            <!-- Content Viewport -->
+            <main class="content-viewport">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; color: var(--color-on-surface);">File Ownership Claim</h2>
+                    <p style="font-size: 13px; color: var(--color-on-surface-variant);">Provide matching proofs to verify and reclaim your item</p>
+                </div>
+
+                <div class="split-claim-layout">
+                    
+                    <!-- Left: Item Preview Widget -->
+                    <div class="card" style="padding: 16px;" id="item-preview-widget">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--color-on-surface); margin-bottom: 12px; border-bottom:1px solid var(--color-surface-container); padding-bottom:8px;">Claiming Item</h3>
+                        <img id="prev-image" src="" alt="Item Preview" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: var(--rounded-default); border: 1px solid var(--color-surface-container); margin-bottom: 12px;">
+                        
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span id="prev-id" style="font-size: 10px; font-weight: 700; color: var(--color-outline); font-family: monospace;">ITM-XXXX</span>
+                            <h4 id="prev-title" style="font-size: 14px; font-weight: 700; color: var(--color-on-surface);">MacBook Pro 14"</h4>
+                            <div style="font-size: 11px; color: var(--color-on-surface-variant); display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+                                <i class="fa-solid fa-location-dot"></i> <span id="prev-location">Student Union</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Form Card -->
+                    <form class="card" style="padding: 28px;" onsubmit="handleClaimSubmit(event)">
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label class="form-label" for="claimant-name">Claimant Full Name</label>
+                                <input class="form-input" type="text" id="claimant-name" disabled style="background-color: var(--color-surface-low);">
+                            </div>
+                            <div class="form-group col-6">
+                                <label class="form-label" for="claimant-id">University Student ID</label>
+                                <input class="form-input" type="text" id="claimant-id" disabled style="background-color: var(--color-surface-low);">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="claimant-email">Academic Email</label>
+                            <input class="form-input" type="email" id="claimant-email" disabled style="background-color: var(--color-surface-low);">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="proof-desc">Ownership Proof Description <span style="color:var(--color-error)">*</span></label>
+                            <textarea class="form-textarea" id="proof-desc" required placeholder="To help campus security verify your claim, please describe distinct features (e.g. keychains, serial numbers, screen stickers, scratches, lock passwords, or specific contents inside). Explain when and where you lost it."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Supporting Documents / Purchase Receipt (Optional)</label>
+                            <div class="dropzone-box" onclick="simulateFileUpload()">
+                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 28px; color: var(--color-outline); margin-bottom: 8px;"></i>
+                                <div style="font-size: 13px; font-weight: 600; color: var(--color-on-surface);">Drag & drop files here, or click to browse</div>
+                                <div style="font-size: 11px; color: var(--color-outline); margin-top: 4px;">Upload screenshots, receipts, or personal photos of the item (JPG, PNG, PDF max 5MB)</div>
+                            </div>
+                            
+                            <div class="file-list-preview" id="file-list-container" style="display: none;">
+                                <div class="file-item" id="file-preview-item">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fa-solid fa-file-invoice" style="color: var(--color-primary); font-size:16px;"></i>
+                                        <span id="file-name-text">macbook_store_receipt.pdf</span>
+                                        <span style="color: var(--color-outline); font-size: 10px;">(842 KB)</span>
+                                    </div>
+                                    <button type="button" class="btn-icon" style="width:20px; height:20px; color: var(--color-error);" onclick="removeUploadedFile()"><i class="fa-solid fa-circle-xmark"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                            <button type="button" class="btn btn-outline" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">Submit Claim Verification</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Shared Mockup State Engine -->
+    <script src="mock_state.js"></script>
+    <script>
+        let currentItem = null;
+        let mockFileUploaded = false;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemId = urlParams.get('id');
+            const items = window.mockState.getItems();
+            
+            // Find appropriate found item
+            currentItem = items.find(i => i.id === itemId);
+            if (!currentItem) {
+                // Find first found item
+                currentItem = items.find(i => i.status === "found");
+            }
+
+            if (currentItem) {
+                renderItemPreview(currentItem);
+            } else {
+                alert("Error: No claimable found items exist in the catalog.");
+                window.location.href = "browse_items.html";
+            }
+
+            // Fill user fields
+            const user = window.mockState.getUser();
+            if (user) {
+                document.getElementById("claimant-name").value = user.name || "";
+                document.getElementById("claimant-id").value = user.id || "2026-9876";
+                document.getElementById("claimant-email").value = user.email || "";
+            }
+        });
+
+        function renderItemPreview(item) {
+            document.getElementById("prev-image").src = item.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=300&q=80";
+            document.getElementById("prev-id").textContent = item.id;
+            document.getElementById("prev-title").textContent = item.title;
+            document.getElementById("prev-location").textContent = item.location;
+            document.getElementById("back-to-details").href = `item_details.html?id=${item.id}`;
+        }
+
+        function simulateFileUpload() {
+            if (mockFileUploaded) return;
+            const names = ["receipt_and_purchase.pdf", "family_photo_with_item.jpg", "warranty_card.png"];
+            const chosen = names[Math.floor(Math.random() * names.length)];
+            
+            document.getElementById("file-name-text").textContent = chosen;
+            document.getElementById("file-list-container").style.display = "block";
+            mockFileUploaded = true;
+            window.showToast("Attachment Added", `"${chosen}" has been attached to your claim proof.`);
+        }
+
+        function removeUploadedFile() {
+            document.getElementById("file-list-container").style.display = "none";
+            mockFileUploaded = false;
+        }
+
+        function handleClaimSubmit(e) {
+            e.preventDefault();
+            
+            const user = window.mockState.getUser();
+            const proof = document.getElementById("proof-desc").value.trim();
+
+            const claimData = {
+                itemId: currentItem.id,
+                itemTitle: currentItem.title,
+                claimantName: user.name,
+                claimantEmail: user.email,
+                claimantId: user.id,
+                date: new Date().toISOString().substring(0, 10),
+                proof: proof + (mockFileUploaded ? " [Attachment: " + document.getElementById("file-name-text").textContent + "]" : "")
+            };
+
+            window.mockState.submitClaim(claimData);
+            window.showToast("Claim Filed Successfully", "Your verification request is now waiting for security desk clerk approval!");
+
+            setTimeout(() => {
+                window.location.href = "my_profile.html?tab=claims";
+            }, 800);
+        }
+    </script>
+</body>
+</html>
