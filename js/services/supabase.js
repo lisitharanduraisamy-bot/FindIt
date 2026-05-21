@@ -83,52 +83,28 @@ class SupabaseService {
 
     // Provision Mock Database with stitch mockups pre-populated
     setupMockData() {
-        // Load existing state from localStorage if available, otherwise seed new
-        const savedDB = localStorage.getItem("findit_mock_db");
-        if (savedDB) {
-            this.mockDB = JSON.parse(savedDB);
-            
-            // Migration: update legacy demo emails to standard gmail accounts using IDs
-            let needsSave = false;
-            if (this.mockDB && this.mockDB.profiles) {
-                this.mockDB.profiles.forEach(p => {
-                    if (p.id === "user-admin" && p.email !== "admin@gmail.com") { p.email = "admin@gmail.com"; needsSave = true; }
-                    if (p.id === "user-student" && p.email !== "amorgan@gmail.com") { p.email = "amorgan@gmail.com"; needsSave = true; }
-                    if (p.id === "user-student2" && p.email !== "sjenkins@gmail.com") { p.email = "sjenkins@gmail.com"; needsSave = true; }
-                    if (p.id === "user-generic-student" && p.email !== "student@gmail.com") { p.email = "student@gmail.com"; needsSave = true; }
-                });
-            }
-            if (needsSave) {
-                this.saveMockDB();
-            }
-
-            // Re-sync active session
-            const savedSession = localStorage.getItem("findit_mock_session");
-            if (savedSession) {
-                this.session = JSON.parse(savedSession);
+        // Version check to force a clean wipe if they are on an old schema
+        const currentMockVersion = "2";
+        const savedVersion = localStorage.getItem("findit_mock_version");
+        
+        if (savedVersion !== currentMockVersion) {
+            console.log("FindIt: Old mock database detected. Wiping for fresh schema upgrade...");
+            localStorage.removeItem("findit_mock_db");
+            localStorage.removeItem("findit_mock_session");
+            localStorage.setItem("findit_mock_version", currentMockVersion);
+        } else {
+            // Load existing state from localStorage if available
+            const savedDB = localStorage.getItem("findit_mock_db");
+            if (savedDB) {
+                this.mockDB = JSON.parse(savedDB);
                 
-                // Also migrate session email if necessary
-                if (this.session && this.session.user) {
-                    let sessionNeedsSave = false;
-                    
-                    if (this.session.user.id === "user-admin" && this.session.user.email !== "admin@gmail.com") { this.session.user.email = "admin@gmail.com"; sessionNeedsSave = true; }
-                    if (this.session.user.id === "user-student" && this.session.user.email !== "amorgan@gmail.com") { this.session.user.email = "amorgan@gmail.com"; sessionNeedsSave = true; }
-                    if (this.session.user.id === "user-student2" && this.session.user.email !== "sjenkins@gmail.com") { this.session.user.email = "sjenkins@gmail.com"; sessionNeedsSave = true; }
-                    if (this.session.user.id === "user-generic-student" && this.session.user.email !== "student@gmail.com") { this.session.user.email = "student@gmail.com"; sessionNeedsSave = true; }
-                    
-                    if (this.session.profile) {
-                        if (this.session.profile.id === "user-admin" && this.session.profile.email !== "admin@gmail.com") { this.session.profile.email = "admin@gmail.com"; sessionNeedsSave = true; }
-                        if (this.session.profile.id === "user-student" && this.session.profile.email !== "amorgan@gmail.com") { this.session.profile.email = "amorgan@gmail.com"; sessionNeedsSave = true; }
-                        if (this.session.profile.id === "user-student2" && this.session.profile.email !== "sjenkins@gmail.com") { this.session.profile.email = "sjenkins@gmail.com"; sessionNeedsSave = true; }
-                        if (this.session.profile.id === "user-generic-student" && this.session.profile.email !== "student@gmail.com") { this.session.profile.email = "student@gmail.com"; sessionNeedsSave = true; }
-                    }
-                    
-                    if (sessionNeedsSave) {
-                        localStorage.setItem("findit_mock_session", JSON.stringify(this.session));
-                    }
+                // Re-sync active session
+                const savedSession = localStorage.getItem("findit_mock_session");
+                if (savedSession) {
+                    this.session = JSON.parse(savedSession);
                 }
+                return;
             }
-            return;
         }
 
         console.log("FindIt: Seeding Mock Database matching Stitch layouts...");
