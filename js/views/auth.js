@@ -39,7 +39,7 @@ export default {
                             <label for="login-password" class="form-label">Password</label>
                             <div class="input-icon-wrapper">
                                 <i class="fa-solid fa-lock"></i>
-                                <input type="password" id="login-password" class="form-input icon-padding icon-padding-right" required placeholder="••••••••">
+                                <input type="password" id="login-password" class="form-input icon-padding icon-padding-right">
                                 <button type="button" class="password-toggle" tabindex="-1">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
