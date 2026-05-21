@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: ANALYTICS & METRICS DASHBOARD VIEW
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 
 export default {

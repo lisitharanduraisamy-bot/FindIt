@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: USER DASHBOARD VIEW WITH NOTIFICATION PROMPTS
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 import { notify } from "../services/notify.js";
 import { formatDate, timeAgo } from "../utils/helpers.js";
@@ -121,9 +117,9 @@ export default {
                 </div>
 
                 <!-- Desktop Notification Authorization Prompt Banner (Feature 26) -->
-                <div id="desktop-notification-prompt" style="display: none; background: linear-gradient(135deg, rgba(37, 99, 235, 0.04), rgba(99, 102, 241, 0.04)); border: 1px solid rgba(37, 99, 235, 0.12); border-radius: var(--rounded-md); padding: 16px 24px; margin-bottom: 24px; align-items: center; justify-content: space-between; gap: 16px;">
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <div style="width: 36px; height: 36px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.08); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <div id="desktop-notification-prompt" style="display: none; background: linear-gradient(135deg, rgba(37, 99, 235, 0.04), rgba(99, 102, 241, 0.04)); border: 1px solid rgba(37, 99, 235, 0.12); border-radius: var(--rounded-md); padding: 12px 16px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.08); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px;">
                             <i class="fa-solid fa-bell-on"></i>
                         </div>
                         <div style="text-align: left;">
@@ -132,8 +128,8 @@ export default {
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button type="button" id="btn-enable-desktop-push" class="btn btn-primary" style="padding: 8px 16px; font-size: 11px; font-weight: 700; white-space: nowrap;">Enable Push</button>
-                        <button type="button" id="btn-dismiss-desktop-push" class="btn-link" style="font-size: 11px; font-weight: 700; padding: 0; color: var(--color-outline); cursor: pointer;">Dismiss</button>
+                        <button type="button" id="btn-enable-desktop-push" class="btn btn-primary" style="padding: 6px 14px; font-size: 11px; font-weight: 700; white-space: nowrap;">Enable Push</button>
+                        <button type="button" id="btn-dismiss-desktop-push" class="btn-link" style="font-size: 11px; font-weight: 700; padding: 0 8px; color: var(--color-outline); cursor: pointer;">Dismiss</button>
                     </div>
                 </div>
 

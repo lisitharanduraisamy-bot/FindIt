@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: CAMPUS SAFETY SECURITY ADMIN PANEL VIEW (SUB-TABS)
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 import { notify } from "../services/notify.js";
 import { formatDate } from "../utils/helpers.js";

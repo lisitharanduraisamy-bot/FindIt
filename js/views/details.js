@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: ITEM DETAILS SPECIFICATION VIEW & RECOVERY TIMELINE
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 import { getCategoryIcon, formatDate } from "../utils/helpers.js";
 

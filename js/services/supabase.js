@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: SUPABASE SERVICES & DUAL MOCK FALLBACK COORDINATOR
-   ========================================================== */
-
 class SupabaseService {
     constructor() {
         this.isMock = false;
@@ -27,11 +23,11 @@ class SupabaseService {
             notifications: []
         };
 
-        this.init();
+        this.initPromise = this.init();
     }
 
     // Initialize Connection
-    init() {
+    async init() {
         // Priority: 1) localStorage override (from Settings modal), 2) config.js, 3) mock mode
         const url = localStorage.getItem("findit_supabase_url");
         const key = localStorage.getItem("findit_supabase_key");
@@ -41,7 +37,7 @@ class SupabaseService {
             this._connect(url, key);
         } else {
             // Attempt to load from local config file (gitignored, never committed)
-            this._initAsync();
+            await this._initAsync();
         }
     }
 
@@ -72,7 +68,7 @@ class SupabaseService {
                 this.client = window.supabase.createClient(url, key);
                 this.isMock = false;
                 console.log("FindIt: Connected securely to Live Supabase DB");
-                this.syncSession();
+                // syncSession is called directly by app.js after awaiting initPromise
             } catch (err) {
                 console.error("FindIt: Supabase connection failed, falling back to mock database.", err);
                 this.isMock = true;
@@ -105,7 +101,7 @@ class SupabaseService {
         const adminProfile = {
             id: "user-admin",
             name: "Campus Security Staff",
-            email: "security@university.edu",
+            email: "admin@gmail.com",
             phone: "(555) 123-0911",
             role: "admin",
             major_class: "Campus Safety Division",
@@ -116,7 +112,7 @@ class SupabaseService {
         const studentProfile = {
             id: "user-student",
             name: "Alex Morgan",
-            email: "amorgan@university.edu",
+            email: "amorgan@gmail.com",
             phone: "(555) 123-4567",
             role: "student",
             major_class: "Computer Science Major • Class of '25",
@@ -127,7 +123,7 @@ class SupabaseService {
         const studentProfile2 = {
             id: "user-student2",
             name: "Sarah Jenkins",
-            email: "sjenkins@university.edu",
+            email: "sjenkins@gmail.com",
             phone: "(555) 123-8899",
             role: "student",
             major_class: "Biology Major • Class of '24",
@@ -135,8 +131,19 @@ class SupabaseService {
             banned: false,
             registered_assets: []
         };
+        const genericStudentProfile = {
+            id: "user-generic-student",
+            name: "Demo Student",
+            email: "student@gmail.com",
+            phone: "(555) 123-9999",
+            role: "student",
+            major_class: "Undecided • Class of '26",
+            avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=student",
+            banned: false,
+            registered_assets: []
+        };
 
-        this.mockDB.profiles.push(adminProfile, studentProfile, studentProfile2);
+        this.mockDB.profiles.push(adminProfile, studentProfile, studentProfile2, genericStudentProfile);
 
         // Set Default Session as student (Alex Morgan) to explorer, can be swapped inside UI logins
         this.session = {
@@ -592,9 +599,17 @@ class SupabaseService {
     // ==========================================
 
     async signIn(email, password) {
+        const emailLower = email.toLowerCase();
+        // Intercept demo accounts to force mock mode
+        if (!this.isMock && (emailLower === "student@gmail.com" || emailLower === "admin@gmail.com" || emailLower === "amorgan@gmail.com" || emailLower === "sjenkins@gmail.com")) {
+            console.log("FindIt: Demo account login intercepted. Switching to local mock mode.");
+            this.isMock = true;
+            this.setupMockData();
+        }
+
         if (this.isMock) {
             // Simulated validation
-            const profile = this.mockDB.profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
+            const profile = this.mockDB.profiles.find(p => p.email.toLowerCase() === emailLower);
             if (!profile) {
                 throw new Error("Invalid login credentials. User profile not found.");
             }

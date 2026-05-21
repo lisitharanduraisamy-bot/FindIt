@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: CENTRAL COORDINATOR & SPA ROUTER
-   ========================================================== */
-
 import { db } from "./services/supabase.js";
 import { notify } from "./services/notify.js";
 import welcomeView from "./views/welcome.js";
@@ -51,13 +47,9 @@ class AppCoordinator {
         this.setupHeaderActions();
         
         // Initial setup and routing
+        await db.initPromise;
         await this.handleSessionSync();
         this.handleRouting();
-        
-        // Show connection warning if offline
-        if (db.connectionError) {
-            this.showSupabaseConnectionWarning();
-        }
         
         // Initial category listing
         await this.loadCategoriesInModal();
@@ -189,13 +181,19 @@ class AppCoordinator {
         const mainWrapper = document.querySelector(".main-wrapper");
         const adminNavWrapper = document.getElementById("admin-nav-wrapper");
 
-        if (db.session) {
+        const hash = window.location.hash.slice(1) || "welcome";
+        const routeName = hash.split("/")[0];
+
+        // Routes that should NOT have the sidebar
+        const noNavRoutes = ["welcome", "login", "register", "forgot"];
+
+        if (!noNavRoutes.includes(routeName)) {
             sidebar.classList.remove("hidden");
             header.classList.remove("hidden");
-            mainWrapper.style.marginLeft = "280px";
+            mainWrapper.classList.remove("no-sidebar");
             
             // Show Admin tab if admin
-            if (db.session.profile.role === "admin") {
+            if (db.session && db.session.profile && db.session.profile.role === "admin") {
                 adminNavWrapper.classList.remove("hidden");
             } else {
                 adminNavWrapper.classList.add("hidden");
@@ -203,7 +201,7 @@ class AppCoordinator {
         } else {
             sidebar.classList.add("hidden");
             header.classList.add("hidden");
-            mainWrapper.style.marginLeft = "0";
+            mainWrapper.classList.add("no-sidebar");
         }
     }
 
@@ -296,18 +294,17 @@ class AppCoordinator {
 
     // Spinner loaders
     showLoader() {
-        const viewport = document.getElementById("main-content");
-        if (viewport) {
-            viewport.innerHTML = `
-                <div class="app-spinner-wrapper" style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 240px;">
-                    <div class="spinner"></div>
-                </div>
-            `;
-        }
+        if (document.getElementById("global-app-loader")) return;
+        const loader = document.createElement("div");
+        loader.id = "global-app-loader";
+        loader.style = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);";
+        loader.innerHTML = '<div class="spinner"></div>';
+        document.body.appendChild(loader);
     }
 
     hideLoader() {
-        // Handled by rendering direct HTML inside router
+        const loader = document.getElementById("global-app-loader");
+        if (loader) loader.remove();
     }
 
     // Modal Manager
@@ -612,23 +609,6 @@ class AppCoordinator {
         return this.handleRouting();
     }
 
-    showSupabaseConnectionWarning() {
-        if (document.getElementById("supabase-connection-warning")) return;
-        const mainWrapper = document.querySelector(".main-wrapper");
-        const header = document.getElementById("app-header");
-        if (mainWrapper && header) {
-            const warningBar = document.createElement("div");
-            warningBar.id = "supabase-connection-warning";
-            warningBar.className = "supabase-warning-banner";
-            warningBar.innerHTML = `
-                <div class="warning-banner-content">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <span><strong>Supabase Connection Warning:</strong> Running in local fallback mode. Verify your Supabase URL & Key in settings if this was unintended.</span>
-                </div>
-            `;
-            mainWrapper.insertBefore(warningBar, header);
-        }
-    }
 }
 
 // Instantiate app

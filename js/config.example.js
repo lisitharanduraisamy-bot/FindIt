@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: SUPABASE ENVIRONMENT VARIABLES (EXAMPLE CONFIG)
-   ========================================================== */
-
 // Rename this file to config.js and add your real Supabase credentials.
 // The config.js file is automatically ignored by Git to secure your secrets.
 

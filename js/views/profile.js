@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: USER PROFILE & ASSET REGISTRY TRACKER VIEW
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 import { notify } from "../services/notify.js";
 import { formatDate } from "../utils/helpers.js";

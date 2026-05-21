@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: UTILITY HELPERS & FORMATTING SUITE
-   ========================================================== */
-
 // 1. Sanitize HTML Strings (Security requirement against XSS)
 export function sanitizeHTML(str) {
     if (!str) return "";

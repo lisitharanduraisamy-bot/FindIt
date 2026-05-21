@@ -1,46 +1,7 @@
-/* ==========================================================
-   FINDIT: TRANSACTIONAL EMAIL & IN-APP ALERTS SIMULATOR
-   ========================================================== */
-
 import { db } from "./supabase.js";
 
 class NotificationService {
     constructor() {
-        try {
-            const savedOutbox = localStorage.getItem("findit_mock_outbox");
-            this.outbox = savedOutbox ? JSON.parse(savedOutbox) : [];
-        } catch (e) {
-            this.outbox = [];
-        }
-        this.initDOM();
-    }
-
-    initDOM() {
-        // Toggle action for floating Outbox Drawer
-        document.addEventListener("DOMContentLoaded", () => {
-            const outboxBar = document.getElementById("email-simulator-bar");
-            if (outboxBar) {
-                outboxBar.addEventListener("click", () => this.toggleOutbox());
-            }
-            // Populate outbox immediately with saved history (BUG-06)
-            this.updateOutboxDOM();
-        });
-    }
-
-    toggleOutbox() {
-        const outbox = document.getElementById("dev-email-simulator");
-        const body = document.getElementById("email-simulator-body");
-        const icon = document.getElementById("outbox-toggle-icon");
-        
-        if (body.classList.contains("hidden")) {
-            body.classList.remove("hidden");
-            outbox.style.height = "420px";
-            icon.className = "fa-solid fa-chevron-down";
-        } else {
-            body.classList.add("hidden");
-            outbox.style.height = "48px";
-            icon.className = "fa-solid fa-chevron-up";
-        }
     }
 
     // In-App Toast Dispatcher
@@ -191,24 +152,6 @@ class NotificationService {
             });
         }
 
-        // Push to outbox array
-        const emailEntry = {
-            id: "email-" + Date.now(),
-            to: recipientEmail,
-            name: recipientName,
-            subject: subject,
-            html: emailHtml,
-            timestamp: new Date().toLocaleTimeString()
-        };
-        this.outbox.unshift(emailEntry);
-        
-        // Persist outbox to localStorage to survive browser refreshes (BUG-06)
-        try {
-            localStorage.setItem("findit_mock_outbox", JSON.stringify(this.outbox));
-        } catch (e) {
-            console.error("FindIt: Failed to save email outbox history:", e);
-        }
-
         // 3. Dispatch native desktop push notifications if authorized (Feature 26)
         if (window.Notification && Notification.permission === "granted") {
             try {
@@ -220,43 +163,9 @@ class NotificationService {
                 console.warn("FindIt: Browser rejected native desktop notification dispatch:", e);
             }
         }
-
-        // Update Outbox DOM
-        this.updateOutboxDOM();
         
         // Show success alert in-app
         this.showToast(`Simulated email notification dispatched to ${recipientEmail}`, "success");
-    }
-
-    updateOutboxDOM() {
-        const outboxList = document.getElementById("email-outbox-list");
-        const outboxBadge = document.getElementById("email-outbox-badge");
-        
-        if (!outboxList) return;
-
-        if (this.outbox.length === 0) {
-            outboxList.innerHTML = `<div class="empty-state">No email notifications sent in this session yet.</div>`;
-            if (outboxBadge) outboxBadge.classList.add("hidden");
-            return;
-        }
-
-        if (outboxBadge) {
-            outboxBadge.classList.remove("hidden");
-            outboxBadge.textContent = this.outbox.length;
-        }
-
-        outboxList.innerHTML = this.outbox.map(email => `
-            <div class="email-preview-card">
-                <div class="email-preview-header">
-                    <div>To: <span>${email.name} &lt;${email.to}&gt;</span></div>
-                    <div>Sent: <span>${email.timestamp}</span></div>
-                </div>
-                <div class="email-preview-subject">${email.subject}</div>
-                <div class="email-preview-html">
-                    ${email.html}
-                </div>
-            </div>
-        `).join("");
     }
 
     // Synthesized Web Audio Notification Bell Chime (Feature 9)

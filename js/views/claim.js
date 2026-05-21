@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: CLAIMS SUBMISSION FORM VIEW
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 import { notify } from "../services/notify.js";
 import { getCategoryIcon } from "../utils/helpers.js";

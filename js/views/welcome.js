@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: WELCOME LANDING PAGE VIEW
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 
 export default {

@@ -1,7 +1,3 @@
-/* ==========================================================
-   FINDIT: APPLICATION SETTINGS VIEW
-   ========================================================== */
-
 import { db } from "../services/supabase.js";
 import { notify } from "../services/notify.js";
 
