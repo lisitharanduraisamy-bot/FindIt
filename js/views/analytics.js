@@ -84,7 +84,19 @@ export default {
                         </div>
                     </div>
 
-                    <!-- Card 3: Hotspots Grid -->
+                    <!-- Card 3: Recovery Ratio Gauge (Feature 38) -->
+                    <div class="card" style="padding: 24px;">
+                        <h3 class="card-title">Monthly Recovery Gauge</h3>
+                        <div style="position: relative; height: 300px; width: 100%; display: flex; align-items: flex-end; justify-content: center;">
+                            <canvas id="chart-recovery-gauge" style="max-height: 220px;"></canvas>
+                            <div style="position: absolute; bottom: 24px; text-align: center;">
+                                <div style="font-size: 36px; font-weight: 800; color: var(--color-on-surface); font-family: 'Outfit', sans-serif; line-height: 1;">${recoveryRate}%</div>
+                                <div style="font-size: 11px; font-weight: 700; color: var(--color-status-verified); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Recovery Ratio</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Hotspots Grid -->
                     <div class="card" style="grid-column: 1 / -1; padding: 24px;">
                         <h3 class="card-title">Campus Hotspot Locations</h3>
                         <div style="position: relative; height: 260px; width: 100%;">
@@ -203,6 +215,37 @@ export default {
                                     boxWidth: 12
                                 }
                             }
+                        }
+                    }
+                });
+            }
+
+            // Semi-Doughnut Gauge: Recovery Ratio (Feature 38)
+            const ctxRec = document.getElementById('chart-recovery-gauge')?.getContext('2d');
+            if (ctxRec) {
+                const activeCount = (statuses.lost || 0) + (statuses.found || 0) + (statuses.claim_pending || 0);
+                new Chart(ctxRec, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Recovered', 'Remaining Active'],
+                        datasets: [{
+                            data: [statuses.returned || 0, activeCount],
+                            backgroundColor: [
+                                '#16a34a', // HSL emerald green for recovered
+                                'rgba(107, 114, 128, 0.15)' // Muted slate gray for active
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        rotation: 270, // Start at bottom
+                        circumference: 180, // Draw half-circle
+                        cutout: '80%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: true }
                         }
                     }
                 });

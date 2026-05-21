@@ -1,5 +1,5 @@
 /* ==========================================================
-   FINDIT: ITEM DETAILS SPECIFICATION VIEW
+   FINDIT: ITEM DETAILS SPECIFICATION VIEW & RECOVERY TIMELINE
    ========================================================== */
 
 import { db } from "../services/supabase.js";
@@ -55,6 +55,77 @@ export default {
             statusText = "Recovered";
         }
 
+        // --- LIFECYCLE TIMELINE LOGIC (Feature 5) ---
+        let activeStep = 1; // 1: Reported, 2: Claim Under Review, 3: Approved & Handoff, 4: Returned & Closed
+        
+        if (item.status === "claim_pending") {
+            activeStep = 2;
+        } else if (item.status === "returned") {
+            activeStep = 4;
+        } else if (item.status === "found") {
+            activeStep = 1;
+        }
+
+        const steps = [
+            { label: "Reported", desc: "Item logged on portal", icon: "fa-solid fa-file-circle-plus" },
+            { label: "Claim Under Review", desc: "Verifying claimant proof", icon: "fa-solid fa-magnifying-glass-chart" },
+            { label: "Approved & Handoff", desc: "Receipt generated", icon: "fa-solid fa-receipt" },
+            { label: "Returned & Closed", desc: "Item back with owner", icon: "fa-solid fa-box-open" }
+        ];
+
+        const stepperHTML = `
+            <div class="card" style="padding: 24px; margin-bottom: 8px;">
+                <h3 style="font-size: 13px; font-weight: 800; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-timeline" style="color: var(--color-primary);"></i>
+                    <span>Interactive Recovery Lifecycle Timeline</span>
+                </h3>
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; position: relative; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0;">
+                    <!-- Background connecting line -->
+                    <div style="position: absolute; top: 28px; left: 12.5%; right: 12.5%; height: 4px; background-color: var(--color-surface-container); z-index: 1; border-radius: 2px;">
+                        <div style="width: ${((activeStep - 1) / 3) * 100}%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-container)); transition: width 0.5s ease-in-out; border-radius: 2px;"></div>
+                    </div>
+                    
+                    ${steps.map((step, idx) => {
+                        const stepNum = idx + 1;
+                        const isCompleted = stepNum < activeStep;
+                        const isActive = stepNum === activeStep;
+                        
+                        let iconColor = "var(--color-outline)";
+                        let circleBg = "var(--color-surface-high)";
+                        let circleBorder = "2px solid var(--color-surface-container)";
+                        let labelColor = "var(--color-outline)";
+                        let textWeight = "500";
+                        let glowStyle = "";
+
+                        if (isCompleted) {
+                            iconColor = "#ffffff";
+                            circleBg = "var(--color-primary)";
+                            circleBorder = "2px solid var(--color-primary)";
+                            labelColor = "var(--color-primary)";
+                            textWeight = "700";
+                        } else if (isActive) {
+                            iconColor = "#ffffff";
+                            circleBg = "var(--color-on-surface)";
+                            circleBorder = "2px solid var(--color-on-surface)";
+                            labelColor = "var(--color-on-surface)";
+                            textWeight = "800";
+                            glowStyle = "box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.2);";
+                        }
+
+                        return `
+                            <div style="flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; min-width: 110px; z-index: 2;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background-color: ${circleBg}; border: ${circleBorder}; display: flex; align-items: center; justify-content: center; font-size: 15px; color: ${iconColor}; ${glowStyle} transition: all 0.3s ease;">
+                                    <i class="${step.icon}"></i>
+                                </div>
+                                <span style="font-size: 13px; font-weight: ${textWeight}; color: ${labelColor}; margin-top: 12px; display: block; font-family: 'Outfit', sans-serif;">${step.label}</span>
+                                <span style="font-size: 10px; color: var(--color-outline); margin-top: 4px; display: block; max-width: 120px; line-height: 14px;">${step.desc}</span>
+                            </div>
+                        `;
+                    }).join("")}
+                </div>
+            </div>
+        `;
+
         // Action panel logic
         let actionButtonsHTML = "";
         
@@ -69,7 +140,8 @@ export default {
             actionButtonsHTML = `
                 <div class="alert alert-info text-center" style="margin-bottom: 0;">
                     <i class="fa-solid fa-circle-check text-success" style="font-size: 20px; margin-bottom: 4px; display: block;"></i>
-                    <div>This item has been successfully claimed and returned to its owner.</div>
+                    <div style="font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--color-on-surface);">Item Restored Successfully</div>
+                    <div style="font-size: 12px; margin-top: 2px;">This item has been successfully claimed and returned to its rightful owner.</div>
                 </div>
             `;
         } else {
@@ -110,13 +182,16 @@ export default {
         }
 
         return `
-            <div style="display: flex; flex-direction: column; gap: 24px;">
-                <!-- Navigation breadcrumb and title -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Navigation breadcrumb -->
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <a href="#browse" class="btn-link" style="padding: 0; font-weight: 700; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-solid fa-arrow-left"></i> Back to Catalog
                     </a>
                 </div>
+
+                <!-- Recovery stepper timeline panel -->
+                ${stepperHTML}
 
                 <!-- Product Specifications Detail Grid -->
                 <div class="details-grid" style="display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start;">
@@ -250,10 +325,10 @@ export default {
                 app.showLoader();
                 try {
                     await db.deleteItem(this.itemId);
-                    app.showToast("Report deleted successfully.", "success");
+                    notify.showToast("Report deleted successfully.", "success");
                     app.navigateTo("browse");
                 } catch (err) {
-                    app.showToast("Failed to delete item: " + err.message, "error");
+                    notify.showToast("Failed to delete item: " + err.message, "error");
                 } finally {
                     app.hideLoader();
                 }

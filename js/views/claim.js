@@ -106,6 +106,26 @@ export default {
                                 <textarea id="claim-notes" class="form-textarea" placeholder="e.g., I can bring my purchase receipt to the desk. You can also text my phone number on file for faster coordination." style="min-height: 80px;"></textarea>
                             </div>
 
+                            <!-- Field 4: Upload Image Proof (BUG-09) -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" style="font-size: 14px;">4. Upload Proof / Supporting Photo (Optional)</label>
+                                <span style="font-size: 12px; color: var(--color-outline); margin-bottom: 8px; display: block; line-height: 16px;">
+                                    Upload a photo of your receipt, the original box serial number, a photo of yourself with the item, or any other visual proof.
+                                </span>
+                                <div class="upload-dropzone" id="claim-image-dropzone">
+                                    <input type="file" id="claim-image-file" class="hidden-file-input" accept="image/*">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <div class="dropzone-text">
+                                        <span class="link-text">Click to upload</span> or drag and drop
+                                    </div>
+                                    <span class="sub-text">SVG, PNG, JPG or GIF (max. 5MB)</span>
+                                    <div id="claim-dropzone-preview" class="hidden">
+                                        <span id="claim-preview-filename">image.png</span>
+                                        <button type="button" id="btn-claim-remove-preview" class="btn-link text-danger">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Warning disclaimer -->
                             <div style="background-color: rgba(186, 26, 26, 0.04); border-left: 4px solid var(--color-error); padding: 16px; border-radius: var(--rounded-default); display: flex; gap: 12px; font-size: 12px; line-height: 18px; color: var(--color-on-surface-variant);">
                                 <i class="fa-solid fa-triangle-exclamation" style="color: var(--color-error); font-size: 16px; margin-top: 1px;"></i>
@@ -157,6 +177,76 @@ export default {
     },
 
     attachEvents(app) {
+        const dropzone = document.getElementById("claim-image-dropzone");
+        const fileInput = document.getElementById("claim-image-file");
+        const preview = document.getElementById("claim-dropzone-preview");
+        const filename = document.getElementById("claim-preview-filename");
+        const removeBtn = document.getElementById("btn-claim-remove-preview");
+        let selectedFile = null;
+
+        if (dropzone && fileInput) {
+            // Drag and drop event listeners (BUG-09)
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.style.borderColor = 'var(--color-primary)';
+                    dropzone.style.backgroundColor = 'var(--color-surface-container)';
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.style.borderColor = '';
+                    dropzone.style.backgroundColor = '';
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files[0]) {
+                    const file = files[0];
+                    selectedFile = file;
+                    filename.textContent = file.name;
+                    preview.classList.remove("hidden");
+                    dropzone.querySelector("i").style.display = "none";
+                    dropzone.querySelector(".dropzone-text").style.display = "none";
+                    dropzone.querySelector(".sub-text").style.display = "none";
+                }
+            });
+
+            dropzone.addEventListener("click", (e) => {
+                if (e.target !== fileInput && e.target !== removeBtn) {
+                    fileInput.click();
+                }
+            });
+
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    selectedFile = file;
+                    filename.textContent = file.name;
+                    preview.classList.remove("hidden");
+                    dropzone.querySelector("i").style.display = "none";
+                    dropzone.querySelector(".dropzone-text").style.display = "none";
+                    dropzone.querySelector(".sub-text").style.display = "none";
+                }
+            });
+
+            removeBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                fileInput.value = "";
+                selectedFile = null;
+                preview.classList.add("hidden");
+                dropzone.querySelector("i").style.display = "block";
+                dropzone.querySelector(".dropzone-text").style.display = "block";
+                dropzone.querySelector(".sub-text").style.display = "block";
+            });
+        }
+
         const formClaim = document.getElementById("form-submit-claim");
         if (formClaim) {
             formClaim.addEventListener("submit", async (e) => {
@@ -174,7 +264,7 @@ export default {
                         ownership_explanation: explanation,
                         identifying_characteristics: characteristics,
                         additional_notes: notes
-                    });
+                    }, selectedFile);
 
                     // Fetch item to get contact details
                     const item = await db.getItemById(this.itemId);

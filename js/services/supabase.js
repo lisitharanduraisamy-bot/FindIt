@@ -87,7 +87,9 @@ class SupabaseService {
             phone: "(555) 123-0911",
             role: "admin",
             major_class: "Campus Safety Division",
-            avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=security"
+            avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=security",
+            banned: false,
+            registered_assets: []
         };
         const studentProfile = {
             id: "user-student",
@@ -96,7 +98,9 @@ class SupabaseService {
             phone: "(555) 123-4567",
             role: "student",
             major_class: "Computer Science Major • Class of '25",
-            avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=alex"
+            avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=alex",
+            banned: false,
+            registered_assets: []
         };
         const studentProfile2 = {
             id: "user-student2",
@@ -105,7 +109,9 @@ class SupabaseService {
             phone: "(555) 123-8899",
             role: "student",
             major_class: "Biology Major • Class of '24",
-            avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=sarah"
+            avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=sarah",
+            banned: false,
+            registered_assets: []
         };
 
         this.mockDB.profiles.push(adminProfile, studentProfile, studentProfile2);
@@ -291,11 +297,39 @@ class SupabaseService {
             if (sessionError) throw sessionError;
             
             if (session) {
-                const { data: profile, error: profileError } = await this.client
+                let { data: profile, error: profileError } = await this.client
                     .from("profiles")
                     .select("*")
                     .eq("id", session.user.id)
                     .single();
+                
+                if (profileError || !profile) {
+                    console.log("FindIt: Latent profile detected. Auto-creating public profile row...");
+                    const metadata = session.user.user_metadata || {};
+                    const fallbackProfile = {
+                        id: session.user.id,
+                        name: metadata.name || session.user.email.split("@")[0],
+                        email: session.user.email,
+                        phone: metadata.phone || "",
+                        major_class: metadata.major_class || "Student",
+                        role: session.user.email.toLowerCase().includes("admin") ? "admin" : "student",
+                        avatar_url: `https://api.dicebear.com/7.x/adventurer/svg?seed=${metadata.name || session.user.id}`,
+                        banned: false,
+                        registered_assets: []
+                    };
+                    const { data: upsertedProfile, error: upsertError } = await this.client
+                        .from("profiles")
+                        .upsert(fallbackProfile)
+                        .select()
+                        .single();
+                    
+                    if (!upsertError && upsertedProfile) {
+                        profile = upsertedProfile;
+                    } else {
+                        console.error("FindIt: Profile auto-creation failed:", upsertError);
+                        profile = fallbackProfile; // client-side fallback
+                    }
+                }
                 
                 this.session = { user: session.user, profile };
             } else {
@@ -534,6 +568,9 @@ class SupabaseService {
             if (!profile) {
                 throw new Error("Invalid login credentials. User profile not found.");
             }
+            if (profile.banned) {
+                throw new Error("Access Denied: Your account has been banned/blacklisted from the FindIt portal.");
+            }
             
             this.session = {
                 user: { id: profile.id, email: profile.email, name: profile.name },
@@ -545,6 +582,10 @@ class SupabaseService {
             const { data, error } = await this.client.auth.signInWithPassword({ email, password });
             if (error) throw error;
             await this.syncSession();
+            if (this.session && this.session.profile && this.session.profile.banned) {
+                await this.signOut();
+                throw new Error("Access Denied: Your account has been banned/blacklisted from the FindIt portal.");
+            }
             return this.session;
         }
     }
@@ -649,7 +690,10 @@ class SupabaseService {
 
     async getItems(filters = {}) {
         if (this.isMock) {
-            let results = [...this.mockDB.items];
+            let results = this.mockDB.items.map(item => {
+                const category = this.mockDB.categories.find(c => c.id === item.category_id);
+                return { ...item, categories: category };
+            });
 
             // Apply query text
             if (filters.search) {
@@ -682,8 +726,22 @@ class SupabaseService {
                 results = results.filter(item => item.date_reported === filters.date);
             }
 
-            // Sort by reported date descending
-            results.sort((a, b) => new Date(b.date_reported) - new Date(a.date_reported));
+            // Apply sorting (Feature 2)
+            const sort = filters.sort || "date_desc";
+            if (sort === "date_desc") {
+                results.sort((a, b) => new Date(b.date_reported) - new Date(a.date_reported));
+            } else if (sort === "date_asc") {
+                results.sort((a, b) => new Date(a.date_reported) - new Date(b.date_reported));
+            } else if (sort === "name_asc") {
+                results.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sort === "name_desc") {
+                results.sort((a, b) => b.name.localeCompare(a.name));
+            } else if (sort === "location_asc") {
+                results.sort((a, b) => a.location.localeCompare(b.location));
+            } else {
+                // Default fallback
+                results.sort((a, b) => new Date(b.date_reported) - new Date(a.date_reported));
+            }
             return results;
         } else {
             // Programmatically seed database if it has zero items
@@ -700,7 +758,16 @@ class SupabaseService {
             if (filters.date) query = query.eq("date_reported", filters.date);
             if (filters.search) query = query.ilike("name", `%${filters.search}%`);
 
-            const { data, error } = await query.order("date_reported", { ascending: false });
+            // Apply live sorting
+            const sort = filters.sort || "date_desc";
+            if (sort === "date_desc") query = query.order("date_reported", { ascending: false });
+            else if (sort === "date_asc") query = query.order("date_reported", { ascending: true });
+            else if (sort === "name_asc") query = query.order("name", { ascending: true });
+            else if (sort === "name_desc") query = query.order("name", { ascending: false });
+            else if (sort === "location_asc") query = query.order("location", { ascending: true });
+            else query = query.order("date_reported", { ascending: false });
+
+            const { data, error } = await query;
             if (error) throw error;
             return data;
         }
@@ -799,25 +866,50 @@ class SupabaseService {
         if (this.isMock) {
             const index = this.mockDB.items.findIndex(i => i.id === itemId);
             if (index !== -1) {
+                const item = this.mockDB.items[index];
                 this.mockDB.items.splice(index, 1);
                 this.saveMockDB();
+                this.createMockAuditLog("Item Deleted", `Item: ${item.name} (${item.ref_id})`);
                 return true;
             }
             return false;
         } else {
             const { error } = await this.client.from("items").delete().eq("id", itemId);
             if (error) throw error;
+            
+            // Live audit log attempt
+            try {
+                await this.client.from("audit_logs").insert([{
+                    operator_id: this.session.profile.id,
+                    action: "Item Deleted",
+                    target_id: itemId
+                }]);
+            } catch (e) {
+                console.warn("Could not insert delete audit log:", e);
+            }
             return true;
         }
     }
 
     // ==========================================
-    // CLAIMS SYSTEM
+    // CLAIMS SYSTEM & SECURITY BAN MECHANICS
     // ==========================================
 
-    async submitClaim(claimData) {
+    async submitClaim(claimData, attachmentFile = null) {
         if (!this.session) throw new Error("Must be logged in to claim an item.");
         const claimantId = this.session.profile.id;
+
+        // Check if user is banned
+        const isBanned = await this.isUserBanned(claimantId);
+        if (isBanned) {
+            throw new Error("Access Denied: Your account is blacklisted due to verification violations.");
+        }
+
+        const fileToUpload = attachmentFile || claimData.attachment_file;
+        let attachmentUrl = null;
+        if (fileToUpload) {
+            attachmentUrl = await this.uploadImage(fileToUpload);
+        }
 
         const newClaim = {
             id: "claim-" + Math.floor(Math.random() * 100000),
@@ -826,6 +918,7 @@ class SupabaseService {
             ownership_explanation: claimData.ownership_explanation,
             identifying_characteristics: claimData.identifying_characteristics,
             additional_notes: claimData.additional_notes || "",
+            attachment_url: attachmentUrl,
             status: "pending",
             admin_notes: null,
             created_at: new Date().toISOString(),
@@ -840,6 +933,7 @@ class SupabaseService {
             if (item) item.status = "claim_pending";
             
             this.saveMockDB();
+            this.createMockAuditLog("Claim Submitted", `User: ${this.session.profile.name} claimed Item ID: ${claimData.item_id}`);
             return newClaim;
         } else {
             // Insert claim and update item status transactionally in live db
@@ -915,6 +1009,7 @@ class SupabaseService {
             }
 
             this.saveMockDB();
+            this.createMockAuditLog(newStatus === "approved" ? "Claim Approved" : "Claim Rejected", `Claim ID: ${claimId} (Notes: ${adminNotes})`);
             return { claim, item };
         } else {
             const { data: claim, error } = await this.client
@@ -941,8 +1036,237 @@ class SupabaseService {
                 .select()
                 .single();
 
+            // Live audit log attempt
+            try {
+                await this.client.from("audit_logs").insert([{
+                    operator_id: this.session.profile.id,
+                    action: newStatus === "approved" ? "Claim Approved" : "Claim Rejected",
+                    target_id: claimId
+                }]);
+            } catch (e) {
+                console.warn("Could not insert update status audit log:", e);
+            }
+
             return { claim, item };
         }
+    }
+
+    // ==========================================
+    // ASSETS PRE-REGISTRATION SERVICE (Feature 34)
+    // ==========================================
+
+    async preRegisterAsset(name, serialNumber) {
+        if (!this.session) throw new Error("Must be logged in to pre-register assets.");
+        const profileId = this.session.profile.id;
+
+        if (this.isMock) {
+            const profile = this.mockDB.profiles.find(p => p.id === profileId);
+            if (profile) {
+                if (!profile.registered_assets) {
+                    profile.registered_assets = [];
+                }
+                const exists = profile.registered_assets.some(asset => asset.serial.toLowerCase() === serialNumber.toLowerCase());
+                if (exists) {
+                    throw new Error("This serial number is already registered.");
+                }
+                const newAsset = {
+                    id: "asset-" + Math.floor(Math.random() * 100000),
+                    name,
+                    serial: serialNumber,
+                    created_at: new Date().toISOString()
+                };
+                profile.registered_assets.push(newAsset);
+                this.saveMockDB();
+                this.session.profile = profile;
+                localStorage.setItem("findit_mock_session", JSON.stringify(this.session));
+                this.createMockAuditLog("Asset Registered", `Asset: ${name} (Serial: ${serialNumber})`);
+                return newAsset;
+            }
+            throw new Error("Profile not found.");
+        } else {
+            const { data: profile } = await this.client.from("profiles").select("registered_assets").eq("id", profileId).single();
+            const currentAssets = profile?.registered_assets || [];
+            
+            if (currentAssets.some(asset => asset.serial.toLowerCase() === serialNumber.toLowerCase())) {
+                throw new Error("This serial number is already registered.");
+            }
+
+            const newAsset = {
+                id: crypto.randomUUID ? crypto.randomUUID() : "asset-" + Math.floor(Math.random() * 100000),
+                name,
+                serial: serialNumber,
+                created_at: new Date().toISOString()
+            };
+            const updatedAssets = [...currentAssets, newAsset];
+
+            const { data, error } = await this.client
+                .from("profiles")
+                .update({ registered_assets: updatedAssets })
+                .eq("id", profileId)
+                .select()
+                .single();
+            if (error) throw error;
+            
+            this.session.profile = data;
+            return newAsset;
+        }
+    }
+
+    async getRegisteredAssets() {
+        if (!this.session) return [];
+        const profileId = this.session.profile.id;
+
+        if (this.isMock) {
+            const profile = this.mockDB.profiles.find(p => p.id === profileId);
+            return profile?.registered_assets || [];
+        } else {
+            const { data, error } = await this.client
+                .from("profiles")
+                .select("registered_assets")
+                .eq("id", profileId)
+                .single();
+            if (error) throw error;
+            return data?.registered_assets || [];
+        }
+    }
+
+    async deleteRegisteredAsset(assetId) {
+        if (!this.session) throw new Error("Must be logged in to delete registered assets.");
+        const profileId = this.session.profile.id;
+
+        if (this.isMock) {
+            const profile = this.mockDB.profiles.find(p => p.id === profileId);
+            if (profile && profile.registered_assets) {
+                profile.registered_assets = profile.registered_assets.filter(a => a.id !== assetId);
+                this.saveMockDB();
+                this.session.profile = profile;
+                localStorage.setItem("findit_mock_session", JSON.stringify(this.session));
+                return true;
+            }
+            return false;
+        } else {
+            const { data: profile } = await this.client.from("profiles").select("registered_assets").eq("id", profileId).single();
+            const updatedAssets = (profile?.registered_assets || []).filter(a => a.id !== assetId);
+
+            const { data, error } = await this.client
+                .from("profiles")
+                .update({ registered_assets: updatedAssets })
+                .eq("id", profileId)
+                .select()
+                .single();
+            if (error) throw error;
+            
+            this.session.profile = data;
+            return true;
+        }
+    }
+
+    // ==========================================
+    // ACCOUNT BAN BLACKLIST MANAGER (Feature 35)
+    // ==========================================
+
+    async banUser(userId, isBanned) {
+        if (!this.session || this.session.profile.role !== "admin") throw new Error("Only admins can manage blacklists.");
+
+        if (this.isMock) {
+            const profile = this.mockDB.profiles.find(p => p.id === userId);
+            if (profile) {
+                profile.banned = isBanned;
+                this.saveMockDB();
+                this.createMockAuditLog(isBanned ? "User Blacklisted" : "User Unbanned", `Target User: ${profile.name} (${profile.email})`);
+                return profile;
+            }
+            throw new Error("Profile not found in mock DB.");
+        } else {
+            const { data, error } = await this.client
+                .from("profiles")
+                .update({ banned: isBanned })
+                .eq("id", userId)
+                .select()
+                .single();
+            if (error) throw error;
+            
+            // Live audit log attempt
+            try {
+                await this.client.from("audit_logs").insert([{
+                    operator_id: this.session.profile.id,
+                    action: isBanned ? "User Blacklisted" : "User Unbanned",
+                    target_id: userId
+                }]);
+            } catch (e) {
+                console.warn("Could not insert blacklist audit log:", e);
+            }
+            return data;
+        }
+    }
+
+    async isUserBanned(userId) {
+        if (this.isMock) {
+            const profile = this.mockDB.profiles.find(p => p.id === userId);
+            return !!profile?.banned;
+        } else {
+            const { data, error } = await this.client
+                .from("profiles")
+                .select("banned")
+                .eq("id", userId)
+                .single();
+            if (error) return false;
+            return !!data?.banned;
+        }
+    }
+
+    // ==========================================
+    // SECURITY AUDIT LOGGING MANAGER (Feature 40)
+    // ==========================================
+
+    async getAuditLogs() {
+        if (!this.session || this.session.profile.role !== "admin") throw new Error("Access Denied: Only administrators can view audit logs.");
+
+        if (this.isMock) {
+            if (!this.mockDB.audit_logs) {
+                this.mockDB.audit_logs = [
+                    { id: "audit-1", operator_name: "Campus Security Staff", action: "System Initialization", target_id: "N/A", created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: "audit-2", operator_name: "Campus Security Staff", action: "Seeded High-Fidelity Items", target_id: "item-2", created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString() }
+                ];
+                this.saveMockDB();
+            }
+            return [...this.mockDB.audit_logs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        } else {
+            const { data, error } = await this.client
+                .from("audit_logs")
+                .select(`
+                    *,
+                    profiles:operator_id (name, email)
+                `)
+                .order("created_at", { ascending: false });
+            
+            if (error) {
+                console.warn("Audit logs table not fully resolved. Falling back to local logging.", error);
+                if (!this.mockDB.audit_logs) {
+                    this.mockDB.audit_logs = [];
+                }
+                return this.mockDB.audit_logs;
+            }
+            return data.map(log => ({
+                ...log,
+                operator_name: log.profiles?.name || "Campus Officer"
+            }));
+        }
+    }
+
+    createMockAuditLog(action, targetId) {
+        if (!this.mockDB.audit_logs) {
+            this.mockDB.audit_logs = [];
+        }
+        const newLog = {
+            id: "audit-" + Math.floor(Math.random() * 100000),
+            operator_name: this.session?.profile?.name || "Campus Officer",
+            action,
+            target_id: targetId || "N/A",
+            created_at: new Date().toISOString()
+        };
+        this.mockDB.audit_logs.unshift(newLog);
+        this.saveMockDB();
     }
 
     // ==========================================
@@ -1012,6 +1336,21 @@ class SupabaseService {
         }
     }
 
+    async markNotificationAsRead(notificationId) {
+        if (this.isMock) {
+            const notif = this.mockDB.notifications.find(n => n.id === notificationId);
+            if (notif) {
+                notif.is_read = true;
+                this.saveMockDB();
+            }
+        } else {
+            await this.client
+                .from("notifications")
+                .update({ is_read: true })
+                .eq("id", notificationId);
+        }
+    }
+
     async getProfiles() {
         // Admin capability
         if (this.isMock) {
@@ -1026,10 +1365,41 @@ class SupabaseService {
     // Storage simulation helper
     async uploadImage(file) {
         if (this.isMock) {
-            // Mock upload returns local object URL or random placeholder
+            // Convert to low-res compressed base64 to avoid local storage quota limits (BUG-02)
             return new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Downscale max-dimensions to 300px
+                        const max_size = 300;
+                        if (width > height) {
+                            if (width > max_size) {
+                                height *= max_size / width;
+                                width = max_size;
+                            }
+                        } else {
+                            if (height > max_size) {
+                                width *= max_size / height;
+                                height = max_size;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Output compressed low-quality JPEG
+                        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+                        resolve(compressedBase64);
+                    };
+                    img.src = e.target.result;
+                };
                 reader.readAsDataURL(file);
             });
         } else {

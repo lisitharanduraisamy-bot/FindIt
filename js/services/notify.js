@@ -6,7 +6,12 @@ import { db } from "./supabase.js";
 
 class NotificationService {
     constructor() {
-        this.outbox = [];
+        try {
+            const savedOutbox = localStorage.getItem("findit_mock_outbox");
+            this.outbox = savedOutbox ? JSON.parse(savedOutbox) : [];
+        } catch (e) {
+            this.outbox = [];
+        }
         this.initDOM();
     }
 
@@ -17,6 +22,8 @@ class NotificationService {
             if (outboxBar) {
                 outboxBar.addEventListener("click", () => this.toggleOutbox());
             }
+            // Populate outbox immediately with saved history (BUG-06)
+            this.updateOutboxDOM();
         });
     }
 
@@ -38,6 +45,9 @@ class NotificationService {
 
     // In-App Toast Dispatcher
     showToast(message, type = "info") {
+        // Play synthesized audible bell chime (Feature 9)
+        this.playNotificationChime();
+
         const container = document.getElementById("toast-container");
         if (!container) return;
 
@@ -152,8 +162,11 @@ class NotificationService {
         } 
         
         else if (type === "claim_approved") {
+             const retrievalNotes = details.clerkNotes && details.clerkNotes.trim()
+                 ? details.clerkNotes.trim()
+                 : "Please retrieve your item at the Central Campus Security Desk in the Student Union (Room 102), Monday to Friday, 9:00 AM - 5:00 PM. Please bring your student ID.";
             subject = `[FindIt] Claim APPROVED: ${details.itemName} (${details.refId})`;
-            const body = `Congratulations! The campus safety division has reviewed your verification details and **APPROVED** your ownership claim for the item: <strong>${details.itemName}</strong>.<br><br><strong>Retrieval Instructions:</strong><br>Please visit the **Central Campus Security Desk** located in the Student Union building (Room 102). Bring your student/staff ID card and reference this email. <br><br>Desk Hours: Mon-Fri 8:00 AM - 6:00 PM.`;
+            const body = `Congratulations! The campus safety division has reviewed your verification details and **APPROVED** your ownership claim for the item: <strong>${details.itemName}</strong>.<br><br><strong>Retrieval Instructions:</strong><br>${retrievalNotes}`;
             emailHtml = this.buildEmailHTML(subject, recipientName, body, {
                 label: "View Claim Details",
                 url: "#profile"
@@ -188,6 +201,25 @@ class NotificationService {
             timestamp: new Date().toLocaleTimeString()
         };
         this.outbox.unshift(emailEntry);
+        
+        // Persist outbox to localStorage to survive browser refreshes (BUG-06)
+        try {
+            localStorage.setItem("findit_mock_outbox", JSON.stringify(this.outbox));
+        } catch (e) {
+            console.error("FindIt: Failed to save email outbox history:", e);
+        }
+
+        // 3. Dispatch native desktop push notifications if authorized (Feature 26)
+        if (window.Notification && Notification.permission === "granted") {
+            try {
+                new Notification(notifTitle, {
+                    body: notifMessage,
+                    icon: "https://api.dicebear.com/7.x/adventurer/svg?seed=" + recipientName
+                });
+            } catch (e) {
+                console.warn("FindIt: Browser rejected native desktop notification dispatch:", e);
+            }
+        }
 
         // Update Outbox DOM
         this.updateOutboxDOM();
@@ -225,6 +257,57 @@ class NotificationService {
                 </div>
             </div>
         `).join("");
+    }
+
+    // Synthesized Web Audio Notification Bell Chime (Feature 9)
+    playNotificationChime() {
+        const isChimeEnabled = localStorage.getItem("findit_audio_chime") !== "false";
+        if (!isChimeEnabled) return;
+
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+            const now = ctx.currentTime;
+            
+            // Primary fundamental sine wave oscillator (C5 tone)
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = "sine";
+            osc1.frequency.setValueAtTime(523.25, now);
+            // Add rich micro pitch sweep
+            osc1.frequency.exponentialRampToValueAtTime(1046.5, now + 0.08);
+            osc1.frequency.exponentialRampToValueAtTime(523.25, now + 0.25);
+            
+            gain1.gain.setValueAtTime(0.12, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.7); // natural exponential chime decay
+
+            // Higher harmonic triangle oscillator for standard metallic bright chime timber
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = "triangle";
+            osc2.frequency.setValueAtTime(1046.50, now);
+            
+            gain2.gain.setValueAtTime(0.04, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+            // Audio node routing
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+
+            // Execute oscillator schedule
+            osc1.start(now);
+            osc2.start(now);
+
+            osc1.stop(now + 0.7);
+            osc2.stop(now + 0.35);
+        } catch (e) {
+            console.warn("FindIt: Web Audio Context initialization blocked or failed:", e);
+        }
     }
 }
 

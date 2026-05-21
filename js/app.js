@@ -32,6 +32,8 @@ class AppCoordinator {
         
         this.activeRoute = null;
         this.selectedFile = null;
+        this.sessionSynced = false;
+        this.currentRouteName = null;
         this.init();
     }
 
@@ -62,11 +64,18 @@ class AppCoordinator {
     async handleSessionSync() {
         // Sync active user details
         await db.syncSession();
+        this.sessionSynced = true;
         this.onUserLogin();
     }
 
     // SPA Router Core
     async handleRouting() {
+        if (!this.sessionSynced) {
+            console.log("FindIt: Deferring routing until session is synchronized...");
+            this.showLoader();
+            return;
+        }
+
         const hash = window.location.hash.slice(1) || "welcome";
         let routeName = hash;
         let routeParam = null;
@@ -79,6 +88,23 @@ class AppCoordinator {
             routeName = "claim";
             routeParam = hash.replace("claim/", "");
         }
+
+        // Reset Browse filters on fresh page load (BUG-05)
+        if (routeName === "browse" && this.currentRouteName !== "browse") {
+            const browseModule = this.routes["browse"];
+            if (browseModule && browseModule.filters) {
+                browseModule.filters = {
+                    search: "",
+                    category: "",
+                    type: "",
+                    status: "",
+                    date: "",
+                    sort: "date_desc",
+                    location: ""
+                };
+            }
+        }
+        this.currentRouteName = routeName;
 
         // Auth Protection Guard
         const user = db.session ? db.session.profile : null;
@@ -239,7 +265,7 @@ class AppCoordinator {
                 listContainer.innerHTML = `<div class="empty-state">No new alerts.</div>`;
             } else {
                 listContainer.innerHTML = unread.map(n => `
-                    <div class="dropdown-item notif-header-item" style="padding: 12px 16px; border-bottom: 1px solid var(--color-surface-container); display: flex; gap: 10px; align-items: flex-start; cursor: pointer;" data-link="${n.link_to || '#dashboard'}">
+                    <div class="dropdown-item notif-header-item" style="padding: 12px 16px; border-bottom: 1px solid var(--color-surface-container); display: flex; gap: 10px; align-items: flex-start; cursor: pointer;" data-link="${n.link_to || '#dashboard'}" data-id="${n.id}">
                         <div style="flex: 1;">
                             <h4 style="font-size: 12px; font-weight: 700; color: var(--color-on-surface); line-height: 16px;">${n.title}</h4>
                             <p style="font-size: 11px; color: var(--color-on-surface-variant); margin-top: 1px; line-height: 14px;">${n.message}</p>
@@ -249,8 +275,15 @@ class AppCoordinator {
 
                 // Link clicks
                 document.querySelectorAll(".notif-header-item").forEach(item => {
-                    item.addEventListener("click", () => {
+                    item.addEventListener("click", async () => {
                         const link = item.getAttribute("data-link");
+                        const notifId = item.getAttribute("data-id");
+                        try {
+                            await db.markNotificationAsRead(notifId);
+                        } catch (err) {
+                            console.error("Failed to mark notification as read:", err);
+                        }
+                        await this.syncHeaderNotifications();
                         window.location.hash = link;
                         document.getElementById("notification-dropdown").classList.add("hidden");
                     });
@@ -300,6 +333,11 @@ class AppCoordinator {
                     const labelDate = document.getElementById("label-report-date");
                     const labelLocation = document.getElementById("label-report-location");
                     const locationInput = document.getElementById("report-location");
+                    const dateInput = document.getElementById("report-date");
+
+                    if (dateInput && !dateInput.value) {
+                        dateInput.value = new Date().toISOString().split("T")[0];
+                    }
 
                     if (val === "lost") {
                         contactSection.classList.remove("hidden");
