@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 
 # Stitch Designs
 stitch-designs/
+
+# Supabase credentials (local only - never commit)
+js/config.js

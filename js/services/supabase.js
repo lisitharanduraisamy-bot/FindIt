@@ -32,19 +32,41 @@ class SupabaseService {
 
     // Initialize Connection
     init() {
-        let url = localStorage.getItem("findit_supabase_url");
-        let key = localStorage.getItem("findit_supabase_key");
+        // Priority: 1) localStorage override (from Settings modal), 2) config.js, 3) mock mode
+        const url = localStorage.getItem("findit_supabase_url");
+        const key = localStorage.getItem("findit_supabase_key");
 
-        // Pre-configure user's live Supabase instance if none is explicitly saved
-        if (!url || !key) {
-            url = "REDACTED_URL";
-            key = "REDACTED_KEY";
-            
-            // Persist to local storage to sync across views
-            localStorage.setItem("findit_supabase_url", url);
-            localStorage.setItem("findit_supabase_key", key);
+        if (url && key) {
+            // User manually set credentials via Settings modal
+            this._connect(url, key);
+        } else {
+            // Attempt to load from local config file (gitignored, never committed)
+            this._initAsync();
         }
+    }
 
+    // Dynamically import credentials from the gitignored config.js
+    async _initAsync() {
+        try {
+            const { CONFIG } = await import("../config.js");
+            if (CONFIG && CONFIG.supabaseUrl && CONFIG.supabaseKey) {
+                this._connect(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+            } else {
+                console.log("FindIt: config.js found but credentials are empty. Running in Mock Mode.");
+                this.isMock = true;
+                this.setupMockData();
+            }
+        } catch (e) {
+            // config.js doesn't exist (e.g. fresh clone) — fall back to mock mode
+            console.log("FindIt: No config.js found. Running in High-Fidelity Mock/Offline Mode.");
+            console.log("FindIt: To connect live, copy js/config.example.js → js/config.js and add your credentials.");
+            this.isMock = true;
+            this.setupMockData();
+        }
+    }
+
+    // Establish Supabase client connection
+    _connect(url, key) {
         if (url && key && window.supabase) {
             try {
                 this.client = window.supabase.createClient(url, key);

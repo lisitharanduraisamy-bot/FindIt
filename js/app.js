@@ -370,11 +370,13 @@ class AppCoordinator {
         if (closeSet) closeSet.addEventListener("click", () => this.closeSettingsModal());
         
         if (formSettings) {
-            // Load current key placeholders
+            // Show connection status, not raw credentials
             const urlInput = document.getElementById("settings-supabase-url");
             const keyInput = document.getElementById("settings-supabase-key");
-            if (urlInput) urlInput.value = localStorage.getItem("findit_supabase_url") || "";
-            if (keyInput) keyInput.value = localStorage.getItem("findit_supabase_key") || "";
+            const hasOverride = localStorage.getItem("findit_supabase_url") && localStorage.getItem("findit_supabase_key");
+            
+            if (urlInput) urlInput.placeholder = hasOverride ? "Custom URL configured (override active)" : "Using config.js defaults";
+            if (keyInput) keyInput.placeholder = hasOverride ? "Custom key configured (override active)" : "Using config.js defaults";
 
             formSettings.addEventListener("submit", (e) => {
                 e.preventDefault();
@@ -399,7 +401,7 @@ class AppCoordinator {
                 localStorage.removeItem("findit_supabase_key");
                 localStorage.removeItem("findit_mock_db");
                 localStorage.removeItem("findit_mock_session");
-                notify.showToast("Reset to Offline Mock database! Reloading...", "info");
+                notify.showToast("Credentials cleared. Will use config.js on reload...", "info");
                 setTimeout(() => window.location.reload(), 1000);
             });
         }
