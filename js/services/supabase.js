@@ -87,10 +87,44 @@ class SupabaseService {
         const savedDB = localStorage.getItem("findit_mock_db");
         if (savedDB) {
             this.mockDB = JSON.parse(savedDB);
+            
+            // Migration: update legacy demo emails to standard gmail accounts
+            let needsSave = false;
+            if (this.mockDB && this.mockDB.profiles) {
+                this.mockDB.profiles.forEach(p => {
+                    if (p.email && p.email.includes("@university.edu")) {
+                        if (p.email === "security@university.edu") p.email = "admin@gmail.com";
+                        else if (p.email === "student@university.edu") p.email = "student@gmail.com";
+                        else if (p.email === "amorgan@university.edu") p.email = "amorgan@gmail.com";
+                        else if (p.email === "sjenkins@university.edu") p.email = "sjenkins@gmail.com";
+                        needsSave = true;
+                    }
+                });
+            }
+            if (needsSave) {
+                this.saveMockDB();
+            }
+
             // Re-sync active session
             const savedSession = localStorage.getItem("findit_mock_session");
             if (savedSession) {
                 this.session = JSON.parse(savedSession);
+                
+                // Also migrate session email if necessary
+                if (this.session && this.session.user && this.session.user.email.includes("@university.edu")) {
+                    if (this.session.user.email === "security@university.edu") this.session.user.email = "admin@gmail.com";
+                    else if (this.session.user.email === "student@university.edu") this.session.user.email = "student@gmail.com";
+                    else if (this.session.user.email === "amorgan@university.edu") this.session.user.email = "amorgan@gmail.com";
+                    else if (this.session.user.email === "sjenkins@university.edu") this.session.user.email = "sjenkins@gmail.com";
+                    
+                    if (this.session.profile && this.session.profile.email.includes("@university.edu")) {
+                        if (this.session.profile.email === "security@university.edu") this.session.profile.email = "admin@gmail.com";
+                        else if (this.session.profile.email === "student@university.edu") this.session.profile.email = "student@gmail.com";
+                        else if (this.session.profile.email === "amorgan@university.edu") this.session.profile.email = "amorgan@gmail.com";
+                        else if (this.session.profile.email === "sjenkins@university.edu") this.session.profile.email = "sjenkins@gmail.com";
+                    }
+                    localStorage.setItem("findit_mock_session", JSON.stringify(this.session));
+                }
             }
             return;
         }
