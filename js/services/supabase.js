@@ -353,6 +353,14 @@ class SupabaseService {
                     }
                 }
                 
+                // DEMO MODE HYBRID CHECK: Force mock mode data for demo accounts
+                const email = session.user.email.toLowerCase();
+                if (email === "student@gmail.com" || email === "admin@gmail.com") {
+                    console.log("FindIt: Demo account detected. Routing data layer to high-fidelity local mock data.");
+                    this.isMock = true;
+                    this.setupMockData();
+                }
+                
                 this.session = { user: session.user, profile };
             } else {
                 this.session = null;
@@ -606,10 +614,26 @@ class SupabaseService {
             await this.syncSession();
             if (this.session && this.session.profile && this.session.profile.banned) {
                 await this.signOut();
-                throw new Error("Access Denied: Your account has been banned/blacklisted from the FindIt portal.");
+                throw new Error("This account has been banned by administrators.");
             }
-            return this.session;
+            return data;
         }
+    }
+
+    async signInWithGoogle() {
+        if (this.isMock) {
+            throw new Error("Google Sign-In is not available in mock mode. Please connect to a live Supabase project.");
+        }
+        
+        const { data, error } = await this.client.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin + window.location.pathname
+            }
+        });
+        
+        if (error) throw error;
+        return data;
     }
 
     async signUp(email, password, name, phone, majorClass) {
@@ -657,15 +681,12 @@ class SupabaseService {
     }
 
     async signOut() {
-        if (this.isMock) {
-            this.session = null;
-            localStorage.removeItem("findit_mock_session");
-            return;
-        } else {
+        if (this.client) {
             const { error } = await this.client.auth.signOut();
-            this.session = null;
-            if (error) throw error;
+            if (error) console.error("FindIt: Supabase signOut error", error);
         }
+        this.session = null;
+        localStorage.removeItem("findit_mock_session");
     }
 
     async updateProfile(name, phone, majorClass) {

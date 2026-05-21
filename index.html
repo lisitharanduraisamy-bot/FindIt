@@ -82,10 +82,10 @@
                     <span>Report Found Item</span>
                 </button>
                 <div class="sidebar-divider"></div>
-                <button id="btn-settings-toggle" class="btn-footer-link">
+                <a href="#settings" id="nav-settings" class="btn-footer-link" style="text-decoration: none;">
                     <i class="fa-solid fa-sliders"></i>
                     <span>Settings</span>
-                </button>
+                </a>
                 <button id="btn-help-toggle" class="btn-footer-link">
                     <i class="fa-solid fa-circle-question"></i>
                     <span>Help Center</span>
@@ -266,41 +266,6 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         SETTINGS / CONNECTION MODAL
-         ========================================== -->
-    <div id="modal-settings" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h2>Supabase Credentials Manager</h2>
-                <button class="modal-close btn-icon" id="btn-close-settings-modal">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-info">
-                    <i class="fa-solid fa-info-circle"></i>
-                    <div>
-                        FindIt is running in **Mock Fallback Mode** with high-fidelity seed data. Paste your real Supabase credentials to sync live auth, Postgres records, and file uploads.
-                    </div>
-                </div>
-                <form id="form-settings">
-                    <div class="form-group">
-                        <label for="settings-supabase-url" class="form-label">Supabase API URL</label>
-                        <input type="text" id="settings-supabase-url" class="form-input" placeholder="https://yourproject.supabase.co">
-                    </div>
-                    <div class="form-group">
-                        <label for="settings-supabase-key" class="form-label">Supabase Anonymous Anon Key</label>
-                        <input type="password" id="settings-supabase-key" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-                    </div>
-                    <div class="form-actions mt-3">
-                        <button type="button" id="btn-clear-settings" class="btn btn-outline text-danger">Reset to Mock Mode</button>
-                        <button type="submit" class="btn btn-primary">Connect Live DB</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <!-- ==========================================
          HELP CENTER MODAL

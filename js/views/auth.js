@@ -83,22 +83,14 @@ export default {
                     
                     <div style="margin: 24px 0 16px; display: flex; align-items: center; justify-content: center; gap: 12px;">
                         <div style="flex: 1; height: 1px; background-color: var(--color-surface-container);"></div>
-                        <span style="font-size: 11px; font-weight: 700; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.05em;">Quick Demo Access</span>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.05em;">Or continue with</span>
                         <div style="flex: 1; height: 1px; background-color: var(--color-surface-container);"></div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <button type="button" id="btn-demo-student" class="btn btn-outline" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; border-radius: var(--rounded-md); text-align: center; cursor: pointer; border: 1px solid var(--color-surface-container); background-color: var(--color-surface-low); transition: all 0.2s ease;">
-                            <i class="fa-solid fa-graduation-cap" style="font-size: 18px; color: var(--color-primary); margin-bottom: 6px;"></i>
-                            <strong style="font-size: 12px; color: var(--color-on-surface); font-family: 'Outfit', sans-serif;">Alex Student</strong>
-                            <span style="font-size: 10px; color: var(--color-outline); margin-top: 2px;">student@university.edu</span>
-                        </button>
-                        <button type="button" id="btn-demo-officer" class="btn btn-outline" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; border-radius: var(--rounded-md); text-align: center; cursor: pointer; border: 1px solid var(--color-surface-container); background-color: var(--color-surface-low); transition: all 0.2s ease;">
-                            <i class="fa-solid fa-shield-halved" style="font-size: 18px; color: var(--color-status-lost); margin-bottom: 6px;"></i>
-                            <strong style="font-size: 12px; color: var(--color-on-surface); font-family: 'Outfit', sans-serif;">Officer Miller</strong>
-                            <span style="font-size: 10px; color: var(--color-outline); margin-top: 2px;">officer.miller@university.edu</span>
-                        </button>
-                    </div>
+                    <button type="button" id="btn-google-login" class="btn btn-outline btn-block" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: var(--rounded-md); text-align: center; cursor: pointer; border: 1px solid var(--color-surface-container); background-color: var(--color-surface-low); transition: all 0.2s ease;">
+                        <i class="fa-brands fa-google" style="font-size: 18px; color: #DB4437;"></i>
+                        <strong style="font-size: 14px; color: var(--color-on-surface); font-family: 'Outfit', sans-serif;">Sign In with Google</strong>
+                    </button>
                 </div>
             </div>
         `;
@@ -205,6 +197,17 @@ export default {
                         
                         <button type="submit" class="btn btn-primary btn-block" style="padding: 12px; margin-top: 12px; font-weight: 700;">Register Account</button>
                     </form>
+
+                    <div style="margin: 24px 0 16px; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                        <div style="flex: 1; height: 1px; background-color: var(--color-surface-container);"></div>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.05em;">Or continue with</span>
+                        <div style="flex: 1; height: 1px; background-color: var(--color-surface-container);"></div>
+                    </div>
+                    
+                    <button type="button" id="btn-google-register" class="btn btn-outline btn-block" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: var(--rounded-md); text-align: center; cursor: pointer; border: 1px solid var(--color-surface-container); background-color: var(--color-surface-low); transition: all 0.2s ease;">
+                        <i class="fa-brands fa-google" style="font-size: 18px; color: #DB4437;"></i>
+                        <strong style="font-size: 14px; color: var(--color-on-surface); font-family: 'Outfit', sans-serif;">Sign Up with Google</strong>
+                    </button>
                     
                     <p style="margin-top: 24px; font-size: 13px; color: var(--color-on-surface-variant);">
                         Already have an account? <button type="button" id="btn-toggle-login" class="btn-link" style="font-weight: 700; padding: 0;">Sign In</button>
@@ -395,20 +398,28 @@ export default {
         }
 
         // --- QUICK DEMO ACCESS TRIGGERS ---
-        const btnDemoStudent = document.getElementById("btn-demo-student");
-        const btnDemoOfficer = document.getElementById("btn-demo-officer");
+        const btnGoogleLogin = document.getElementById("btn-google-login");
+        const btnGoogleRegister = document.getElementById("btn-google-register");
 
-        if (btnDemoStudent) {
-            btnDemoStudent.addEventListener("click", async () => {
-                await this.handleDemoLogin(app, "student@university.edu", "DemoStudent123!", "Alex Morgan", "(555) 123-4567", "Computer Science Major • Class of '25");
-            });
-        }
+        const handleGoogleOAuth = async () => {
+            app.showLoader();
+            try {
+                if (db.isMock) {
+                    notify.showToast("Google Sign-In is not available in Demo Mode. Connect a live database.", "error");
+                    return;
+                }
+                await db.signInWithGoogle();
+                // Supabase will redirect to Google for OAuth flow.
+            } catch (err) {
+                console.error("FindIt OAuth Error:", err);
+                notify.showToast(err.message, "error");
+            } finally {
+                app.hideLoader();
+            }
+        };
 
-        if (btnDemoOfficer) {
-            btnDemoOfficer.addEventListener("click", async () => {
-                await this.handleDemoLogin(app, "officer.miller@university.edu", "DemoOfficer123!", "Officer Miller", "(555) 123-0911", "Campus Safety Division");
-            });
-        }
+        if (btnGoogleLogin) btnGoogleLogin.addEventListener("click", handleGoogleOAuth);
+        if (btnGoogleRegister) btnGoogleRegister.addEventListener("click", handleGoogleOAuth);
     },
 
     // Handles Directory Auto-fill based on email prefix (Feature 49)
@@ -546,15 +557,15 @@ export default {
                     await db.signUp(email, password, name, phone, majorClass);
                     
                     // Auto-promote officer to admin in SSO as well
-                    if (email.toLowerCase().includes("officer") || email.toLowerCase().includes("miller") || email.toLowerCase().includes("security")) {
-                        if (!db.isMock) {
+                    if (email.toLowerCase().includes("admin") || email.toLowerCase().includes("officer") || email.toLowerCase().includes("miller") || email.toLowerCase().includes("security")) {
+                        if (!db.isMock && db.session) {
                             await db.client.from("profiles").update({ role: "admin" }).eq("id", db.session.profile.id);
-                        } else {
+                        } else if (db.isMock && db.session) {
                             const profile = db.mockDB.profiles.find(p => p.id === db.session.profile.id);
                             if (profile) profile.role = "admin";
                             db.saveMockDB();
                         }
-                        await db.syncSession();
+                        if (db.session) await db.syncSession();
                     }
                 }
                 
@@ -579,56 +590,4 @@ export default {
         }, 2400);
     },
 
-    async handleDemoLogin(app, email, password, name, phone, majorClass) {
-        app.showLoader();
-        try {
-            console.log(`FindIt: Attempting Quick Demo Access for ${email}...`);
-            await db.signIn(email, password);
-            notify.showToast(`Logged in securely as ${db.session.profile.name}!`, "success");
-            app.onUserLogin();
-            app.navigateTo("dashboard");
-        } catch (err) {
-            // Self-healing: if the user doesn't exist on the remote database, let's create them!
-            if (err.message && (err.message.includes("Invalid login credentials") || err.message.includes("not found") || err.message.includes("profile not found"))) {
-                console.log(`FindIt: Account not found on live DB. Executing self-healing registration for ${email}...`);
-                try {
-                    await db.signUp(email, password, name, phone, majorClass);
-                    
-                    // If it is Miller, promote their role programmatically in live db or mock db!
-                    if (email.toLowerCase().includes("officer")) {
-                        if (!db.isMock) {
-                            const { error: promoError } = await db.client
-                                .from("profiles")
-                                .update({ role: "admin" })
-                                .eq("id", db.session.profile.id);
-                            
-                            if (promoError) {
-                                console.error("FindIt: Failed to promote role in database:", promoError);
-                            } else {
-                                console.log("FindIt: Programmatically promoted Officer Miller to Admin role.");
-                            }
-                        } else {
-                            const profile = db.mockDB.profiles.find(p => p.id === db.session.profile.id);
-                            if (profile) profile.role = "admin";
-                            db.saveMockDB();
-                        }
-                        // Refresh session to pull fresh role
-                        await db.syncSession();
-                    }
-                    
-                    notify.showToast(`Welcome! Created self-healing account for ${name}!`, "success");
-                    app.onUserLogin();
-                    app.navigateTo("dashboard");
-                } catch (signUpErr) {
-                    console.error("FindIt: Self-healing registration failed:", signUpErr);
-                    notify.showToast("Failed to provision demo account: " + signUpErr.message, "error");
-                }
-            } else {
-                console.error("FindIt: Demo login failed:", err);
-                notify.showToast("Demo login failed: " + err.message, "error");
-            }
-        } finally {
-            app.hideLoader();
-        }
-    }
 };

@@ -13,6 +13,7 @@ import claimView from "./views/claim.js";
 import profileView from "./views/profile.js";
 import analyticsView from "./views/analytics.js";
 import adminView from "./views/admin.js";
+import settingsView from "./views/settings.js";
 
 class AppCoordinator {
     constructor() {
@@ -27,7 +28,8 @@ class AppCoordinator {
             "admin": adminView,
             "login": authView,
             "register": authView,
-            "forgot": authView
+            "forgot": authView,
+            "settings": settingsView
         };
         
         this.activeRoute = null;
@@ -360,51 +362,7 @@ class AppCoordinator {
             btnSidebar.addEventListener("click", () => this.openReportModal("found"));
         }
 
-        // Credentials / settings modal
-        const toggleSet = document.getElementById("btn-settings-toggle");
-        const closeSet = document.getElementById("btn-close-settings-modal");
-        const formSettings = document.getElementById("form-settings");
-        const clearSettings = document.getElementById("btn-clear-settings");
 
-        if (toggleSet) toggleSet.addEventListener("click", () => this.openSettingsModal());
-        if (closeSet) closeSet.addEventListener("click", () => this.closeSettingsModal());
-        
-        if (formSettings) {
-            // Show connection status, not raw credentials
-            const urlInput = document.getElementById("settings-supabase-url");
-            const keyInput = document.getElementById("settings-supabase-key");
-            const hasOverride = localStorage.getItem("findit_supabase_url") && localStorage.getItem("findit_supabase_key");
-            
-            if (urlInput) urlInput.placeholder = hasOverride ? "Custom URL configured (override active)" : "Using config.js defaults";
-            if (keyInput) keyInput.placeholder = hasOverride ? "Custom key configured (override active)" : "Using config.js defaults";
-
-            formSettings.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const url = urlInput.value.trim();
-                const key = keyInput.value.trim();
-
-                if (url && key) {
-                    localStorage.setItem("findit_supabase_url", url);
-                    localStorage.setItem("findit_supabase_key", key);
-                    localStorage.removeItem("findit_mock_db"); // Clear mock to force sync live
-                    notify.showToast("Supabase connected! Reloading layout...", "success");
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    notify.showToast("Please provide both Supabase URL and Key", "error");
-                }
-            });
-        }
-
-        if (clearSettings) {
-            clearSettings.addEventListener("click", () => {
-                localStorage.removeItem("findit_supabase_url");
-                localStorage.removeItem("findit_supabase_key");
-                localStorage.removeItem("findit_mock_db");
-                localStorage.removeItem("findit_mock_session");
-                notify.showToast("Credentials cleared. Will use config.js on reload...", "info");
-                setTimeout(() => window.location.reload(), 1000);
-            });
-        }
 
         // Help Center
         const toggleHelp = document.getElementById("btn-help-toggle");
@@ -452,13 +410,7 @@ class AppCoordinator {
         }
     }
 
-    openSettingsModal() {
-        document.getElementById("modal-settings")?.classList.remove("hidden");
-    }
 
-    closeSettingsModal() {
-        document.getElementById("modal-settings")?.classList.add("hidden");
-    }
 
     openHelpModal() {
         document.getElementById("modal-help")?.classList.remove("hidden");
