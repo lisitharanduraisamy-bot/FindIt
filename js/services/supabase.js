@@ -4,9 +4,11 @@
 
 class SupabaseService {
     constructor() {
-        this.isMock = true;
+        this.isMock = false;
         this.client = null;
         this.session = null;
+        this.connectionError = false;
+        this.hasSeeded = false;
         
         // Dynamic mock database in-memory storage
         this.mockDB = {
@@ -280,17 +282,244 @@ class SupabaseService {
 
     async syncSession() {
         if (this.isMock) return;
-        const { data: { session } } = await this.client.auth.getSession();
-        if (session) {
-            const { data: profile } = await this.client
-                .from("profiles")
-                .select("*")
-                .eq("id", session.user.id)
-                .single();
+        try {
+            // First, do a lightweight query to verify connectivity and credentials
+            const { data: catTest, error: testError } = await this.client.from("categories").select("id").limit(1);
+            if (testError) throw testError;
+
+            const { data: { session }, error: sessionError } = await this.client.auth.getSession();
+            if (sessionError) throw sessionError;
             
-            this.session = { user: session.user, profile };
-        } else {
-            this.session = null;
+            if (session) {
+                const { data: profile, error: profileError } = await this.client
+                    .from("profiles")
+                    .select("*")
+                    .eq("id", session.user.id)
+                    .single();
+                
+                this.session = { user: session.user, profile };
+            } else {
+                this.session = null;
+            }
+            this.connectionError = false;
+        } catch (err) {
+            console.error("FindIt: Connection verification failed. Activating High-Fidelity Mock fallback.", err);
+            this.isMock = true;
+            this.connectionError = true;
+            this.setupMockData();
+        }
+    }
+
+    async seedDatabaseIfEmpty() {
+        if (this.isMock || !this.session || this.hasSeeded) return;
+        
+        try {
+            // Check if there are items in the database
+            const { count, error: countError } = await this.client
+                .from("items")
+                .select("id", { count: "exact", head: true });
+            
+            if (countError) throw countError;
+            
+            if (count === 0) {
+                console.log("FindIt: Remote database is empty. Commencing client-side high-fidelity seeding...");
+                this.hasSeeded = true;
+                
+                // Get all categories to map slugs to UUIDs
+                const { data: dbCategories, error: catError } = await this.client
+                    .from("categories")
+                    .select("*");
+                
+                if (catError) throw catError;
+                if (!dbCategories || dbCategories.length === 0) {
+                    console.warn("FindIt: No categories found in the database. Cannot seed items.");
+                    return;
+                }
+                
+                const categorySlugMap = {};
+                dbCategories.forEach(cat => {
+                    categorySlugMap[cat.slug] = cat.id;
+                });
+                
+                // Prepare the 6 items
+                const currentUserId = this.session.profile.id;
+                const contactName = this.session.profile.name;
+                const contactEmail = this.session.profile.email;
+                
+                const itemsToInsert = [
+                    {
+                        ref_id: "#LST-8902",
+                        type: "lost",
+                        name: "Brown Leather Wallet",
+                        description: "A compact bifold brown leather wallet. Left in the library reading room. Contains student ID card.",
+                        category_id: categorySlugMap["accessories"] || dbCategories[0].id,
+                        date_reported: "2026-05-12",
+                        location: "Library Reading Room",
+                        image_url: "https://images.unsplash.com/photo-1627124424074-7e3243096d76?auto=format&fit=crop&q=80&w=300",
+                        status: "lost",
+                        reported_by: currentUserId,
+                        contact_name: contactName,
+                        contact_email: contactEmail
+                    },
+                    {
+                        ref_id: "#FD-8921",
+                        type: "found",
+                        name: "Silver MacBook Pro 14\"",
+                        description: "A late-model Silver MacBook Pro, 14-inch display. The device was found closed and powered off on a desk. There are some minor scuffs on the bottom casing, but the screen appears intact. It has a small, faded sticker of a coffee cup on the bottom right corner of the top lid. No charging cable or sleeve was found with it.",
+                        category_id: categorySlugMap["electronics"] || dbCategories[0].id,
+                        date_reported: "2026-05-21",
+                        location: "Main Library, Study Hall B, Desk 42",
+                        image_url: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=400",
+                        status: "claim_pending",
+                        reported_by: currentUserId,
+                        contact_name: contactName,
+                        contact_email: contactEmail
+                    },
+                    {
+                        ref_id: "#LST-0442",
+                        type: "lost",
+                        name: "Calculus Textbook (7th Ed)",
+                        description: "Single Variable Calculus Early Transcendentals. Red cover. Lost in Math Annex classroom.",
+                        category_id: categorySlugMap["books-stationery"] || dbCategories[0].id,
+                        date_reported: "2026-05-21",
+                        location: "Math Annex 204",
+                        image_url: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300",
+                        status: "lost",
+                        reported_by: currentUserId,
+                        contact_name: contactName,
+                        contact_email: contactEmail
+                    },
+                    {
+                        ref_id: "#F-0883",
+                        type: "found",
+                        name: "Dorm Keys on Blue Lanyard",
+                        description: "A set of 3 brass keys attached to a blue university lanyard. Found near the dining hall.",
+                        category_id: categorySlugMap["keys"] || dbCategories[0].id,
+                        date_reported: "2026-05-20",
+                        location: "Campus Quad Benches",
+                        image_url: "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&q=80&w=300",
+                        status: "returned",
+                        reported_by: currentUserId,
+                        contact_name: contactName,
+                        contact_email: contactEmail
+                    },
+                    {
+                        ref_id: "#FI-8923-HD",
+                        type: "found",
+                        name: "Black Wireless Headphones",
+                        description: "Over-ear noise cancelling headphones. Found on a study desk.",
+                        category_id: categorySlugMap["electronics"] || dbCategories[0].id,
+                        date_reported: "2026-05-21",
+                        location: "Main Library Study Desk",
+                        image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=300",
+                        status: "found",
+                        reported_by: currentUserId,
+                        contact_name: contactName,
+                        contact_email: contactEmail
+                    },
+                    {
+                        ref_id: "#LST-8841",
+                        type: "lost",
+                        name: "Student ID Card (Initials J.D.)",
+                        description: "Undergraduate student ID card belonging to Jack Davis. Found near cafeteria hall.",
+                        category_id: categorySlugMap["documents"] || dbCategories[0].id,
+                        date_reported: "2026-05-05",
+                        location: "Main Cafeteria",
+                        image_url: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=300",
+                        status: "returned",
+                        reported_by: currentUserId,
+                        contact_name: contactName,
+                        contact_email: contactEmail
+                    }
+                ];
+                
+                const { data: insertedItems, error: insertItemsError } = await this.client
+                    .from("items")
+                    .insert(itemsToInsert)
+                    .select();
+                
+                if (insertItemsError) throw insertItemsError;
+                console.log("FindIt: Successfully seeded 6 items in live Supabase DB.");
+                
+                // Seed Claims if empty
+                const { count: claimsCount, error: claimsCountError } = await this.client
+                    .from("claims")
+                    .select("id", { count: "exact", head: true });
+                
+                if (claimsCountError) throw claimsCountError;
+                
+                if (claimsCount === 0 && insertedItems && insertedItems.length > 0) {
+                    const macbook = insertedItems.find(item => item.ref_id === "#FD-8921");
+                    if (macbook) {
+                        const newClaim = {
+                            item_id: macbook.id,
+                            claimant_id: currentUserId,
+                            ownership_explanation: "I was studying in the library early yesterday morning and had to rush off to a class. I forgot my laptop on the desk in B study hall.",
+                            identifying_characteristics: "The bottom casing has a slight scratch on the left corner, and there's a small coffee cup sticker under the top lid on the right. The serial number ends in 492A.",
+                            additional_notes: "It contains my CS senior project codes. Please let me retrieve it, thank you!",
+                            status: "pending"
+                        };
+                        
+                        const { error: claimInsertError } = await this.client
+                            .from("claims")
+                            .insert([newClaim]);
+                        
+                        if (claimInsertError) {
+                            console.error("FindIt: Error seeding claim:", claimInsertError);
+                        } else {
+                            console.log("FindIt: Successfully seeded MacBook claim in live Supabase DB.");
+                        }
+                    }
+                }
+                
+                // Seed Notifications if empty
+                const { count: notifCount, error: notifCountError } = await this.client
+                    .from("notifications")
+                    .select("id", { count: "exact", head: true });
+                
+                if (notifCountError) throw notifCountError;
+                
+                if (notifCount === 0) {
+                    const notifsToInsert = [
+                        {
+                            user_id: currentUserId,
+                            type: "claim_submitted",
+                            title: "New Claim Submitted",
+                            message: `Student ${contactName} claimed 'MacBook Pro'.`,
+                            is_read: false,
+                            link_to: "#admin"
+                        },
+                        {
+                            user_id: currentUserId,
+                            type: "status_updated",
+                            title: "High Value Item Reported",
+                            message: "Gold watch found in Library Main Hall.",
+                            is_read: false,
+                            link_to: "#browse"
+                        },
+                        {
+                            user_id: currentUserId,
+                            type: "status_updated",
+                            title: "System Update",
+                            message: "Scheduled maintenance tonight at 11:59 PM.",
+                            is_read: false,
+                            link_to: "#dashboard"
+                        }
+                    ];
+                    
+                    const { error: notifInsertError } = await this.client
+                        .from("notifications")
+                        .insert(notifsToInsert);
+                    
+                    if (notifInsertError) {
+                        console.error("FindIt: Error seeding notifications:", notifInsertError);
+                    } else {
+                        console.log("FindIt: Successfully seeded notifications in live Supabase DB.");
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("FindIt: Client-side seeding encountered an error:", e);
         }
     }
 
@@ -457,6 +686,9 @@ class SupabaseService {
             results.sort((a, b) => new Date(b.date_reported) - new Date(a.date_reported));
             return results;
         } else {
+            // Programmatically seed database if it has zero items
+            await this.seedDatabaseIfEmpty();
+
             let query = this.client.from("items").select(`
                 *,
                 categories (id, name, icon)

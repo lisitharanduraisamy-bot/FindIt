@@ -2115,3 +2115,26 @@ input, select, textarea {
         border-radius: 0;
     }
 }
+
+/* Supabase Warning Banner */
+.supabase-warning-banner {
+    background-color: #fef2f2;
+    border-bottom: 1px solid #fca5a5;
+    padding: 10px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 100;
+}
+.warning-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.warning-banner-content i {
+    color: #ef4444;
+    font-size: 14px;
+}

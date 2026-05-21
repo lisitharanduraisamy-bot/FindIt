@@ -50,12 +50,18 @@ class AppCoordinator {
         await this.handleSessionSync();
         this.handleRouting();
         
+        // Show connection warning if offline
+        if (db.connectionError) {
+            this.showSupabaseConnectionWarning();
+        }
+        
         // Initial category listing
         await this.loadCategoriesInModal();
     }
 
     async handleSessionSync() {
         // Sync active user details
+        await db.syncSession();
         this.onUserLogin();
     }
 
@@ -608,6 +614,28 @@ class AppCoordinator {
     // Public Toast mapping helper
     showToast(msg, type) {
         notify.showToast(msg, type);
+    }
+
+    renderView() {
+        return this.handleRouting();
+    }
+
+    showSupabaseConnectionWarning() {
+        if (document.getElementById("supabase-connection-warning")) return;
+        const mainWrapper = document.querySelector(".main-wrapper");
+        const header = document.getElementById("app-header");
+        if (mainWrapper && header) {
+            const warningBar = document.createElement("div");
+            warningBar.id = "supabase-connection-warning";
+            warningBar.className = "supabase-warning-banner";
+            warningBar.innerHTML = `
+                <div class="warning-banner-content">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span><strong>Supabase Connection Warning:</strong> Running in local fallback mode. Verify your Supabase URL & Key in settings if this was unintended.</span>
+                </div>
+            `;
+            mainWrapper.insertBefore(warningBar, header);
+        }
     }
 }
 
