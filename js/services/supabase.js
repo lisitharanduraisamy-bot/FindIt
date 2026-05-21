@@ -88,17 +88,14 @@ class SupabaseService {
         if (savedDB) {
             this.mockDB = JSON.parse(savedDB);
             
-            // Migration: update legacy demo emails to standard gmail accounts
+            // Migration: update legacy demo emails to standard gmail accounts using IDs
             let needsSave = false;
             if (this.mockDB && this.mockDB.profiles) {
                 this.mockDB.profiles.forEach(p => {
-                    if (p.email && p.email.includes("@university.edu")) {
-                        if (p.email === "security@university.edu") p.email = "admin@gmail.com";
-                        else if (p.email === "student@university.edu") p.email = "student@gmail.com";
-                        else if (p.email === "amorgan@university.edu") p.email = "amorgan@gmail.com";
-                        else if (p.email === "sjenkins@university.edu") p.email = "sjenkins@gmail.com";
-                        needsSave = true;
-                    }
+                    if (p.id === "user-admin" && p.email !== "admin@gmail.com") { p.email = "admin@gmail.com"; needsSave = true; }
+                    if (p.id === "user-student" && p.email !== "amorgan@gmail.com") { p.email = "amorgan@gmail.com"; needsSave = true; }
+                    if (p.id === "user-student2" && p.email !== "sjenkins@gmail.com") { p.email = "sjenkins@gmail.com"; needsSave = true; }
+                    if (p.id === "user-generic-student" && p.email !== "student@gmail.com") { p.email = "student@gmail.com"; needsSave = true; }
                 });
             }
             if (needsSave) {
@@ -111,19 +108,24 @@ class SupabaseService {
                 this.session = JSON.parse(savedSession);
                 
                 // Also migrate session email if necessary
-                if (this.session && this.session.user && this.session.user.email.includes("@university.edu")) {
-                    if (this.session.user.email === "security@university.edu") this.session.user.email = "admin@gmail.com";
-                    else if (this.session.user.email === "student@university.edu") this.session.user.email = "student@gmail.com";
-                    else if (this.session.user.email === "amorgan@university.edu") this.session.user.email = "amorgan@gmail.com";
-                    else if (this.session.user.email === "sjenkins@university.edu") this.session.user.email = "sjenkins@gmail.com";
+                if (this.session && this.session.user) {
+                    let sessionNeedsSave = false;
                     
-                    if (this.session.profile && this.session.profile.email.includes("@university.edu")) {
-                        if (this.session.profile.email === "security@university.edu") this.session.profile.email = "admin@gmail.com";
-                        else if (this.session.profile.email === "student@university.edu") this.session.profile.email = "student@gmail.com";
-                        else if (this.session.profile.email === "amorgan@university.edu") this.session.profile.email = "amorgan@gmail.com";
-                        else if (this.session.profile.email === "sjenkins@university.edu") this.session.profile.email = "sjenkins@gmail.com";
+                    if (this.session.user.id === "user-admin" && this.session.user.email !== "admin@gmail.com") { this.session.user.email = "admin@gmail.com"; sessionNeedsSave = true; }
+                    if (this.session.user.id === "user-student" && this.session.user.email !== "amorgan@gmail.com") { this.session.user.email = "amorgan@gmail.com"; sessionNeedsSave = true; }
+                    if (this.session.user.id === "user-student2" && this.session.user.email !== "sjenkins@gmail.com") { this.session.user.email = "sjenkins@gmail.com"; sessionNeedsSave = true; }
+                    if (this.session.user.id === "user-generic-student" && this.session.user.email !== "student@gmail.com") { this.session.user.email = "student@gmail.com"; sessionNeedsSave = true; }
+                    
+                    if (this.session.profile) {
+                        if (this.session.profile.id === "user-admin" && this.session.profile.email !== "admin@gmail.com") { this.session.profile.email = "admin@gmail.com"; sessionNeedsSave = true; }
+                        if (this.session.profile.id === "user-student" && this.session.profile.email !== "amorgan@gmail.com") { this.session.profile.email = "amorgan@gmail.com"; sessionNeedsSave = true; }
+                        if (this.session.profile.id === "user-student2" && this.session.profile.email !== "sjenkins@gmail.com") { this.session.profile.email = "sjenkins@gmail.com"; sessionNeedsSave = true; }
+                        if (this.session.profile.id === "user-generic-student" && this.session.profile.email !== "student@gmail.com") { this.session.profile.email = "student@gmail.com"; sessionNeedsSave = true; }
                     }
-                    localStorage.setItem("findit_mock_session", JSON.stringify(this.session));
+                    
+                    if (sessionNeedsSave) {
+                        localStorage.setItem("findit_mock_session", JSON.stringify(this.session));
+                    }
                 }
             }
             return;
