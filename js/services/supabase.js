@@ -159,13 +159,6 @@ class SupabaseService {
 
         this.mockDB.profiles.push(adminProfile, studentProfile, studentProfile2, genericStudentProfile);
 
-        // Set Default Session as student (Alex Morgan) to explorer, can be swapped inside UI logins
-        this.session = {
-            user: { id: studentProfile.id, email: studentProfile.email, name: studentProfile.name },
-            profile: studentProfile
-        };
-        localStorage.setItem("findit_mock_session", JSON.stringify(this.session));
-
         // 2. Seed Items (matching stitch screenshots)
         const item1 = {
             id: "item-1",
