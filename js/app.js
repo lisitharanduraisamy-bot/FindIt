@@ -7,6 +7,7 @@ import browseView from "./views/browse.js";
 import detailsView from "./views/details.js";
 import claimView from "./views/claim.js";
 import profileView from "./views/profile.js";
+import reportsView from "./views/reports.js";
 import analyticsView from "./views/analytics.js";
 import adminView from "./views/admin.js";
 import settingsView from "./views/settings.js";
@@ -20,6 +21,7 @@ class AppCoordinator {
             "details": detailsView,
             "claim": claimView,
             "profile": profileView,
+            "reports": reportsView,
             "analytics": analyticsView,
             "admin": adminView,
             "login": authView,
@@ -206,7 +208,7 @@ class AppCoordinator {
     }
 
     updateSidebarActiveState(routeName) {
-        const navs = ["dashboard", "browse", "profile", "analytics", "admin"];
+        const navs = ["dashboard", "browse", "reports", "analytics", "admin"];
         navs.forEach(nav => {
             const el = document.getElementById(`nav-${nav}`);
             if (el) {
