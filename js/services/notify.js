@@ -4,6 +4,114 @@ class NotificationService {
     constructor() {
     }
 
+    // Toast Helpers
+    showSuccessToast(message) { this.showToast(message, "success"); }
+    showErrorToast(message) { this.showToast(message, "error"); }
+    showWarningToast(message) { this.showToast(message, "warning"); }
+
+    // Custom Native Dialog Replacements
+    showConfirmationModal(title, description, confirmText = "Confirm", cancelText = "Cancel") {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.style.zIndex = '9999';
+            
+            overlay.innerHTML = `
+                <div class="modal-card" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2>${title}</h2>
+                        <button class="modal-close btn-icon">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--color-on-surface-variant); font-size: 14px;">${description}</p>
+                    </div>
+                    <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--color-surface-container); display: flex; justify-content: flex-end; gap: 12px; background-color: var(--color-surface-low);">
+                        <button class="btn btn-outline btn-cancel">${cancelText}</button>
+                        <button class="btn btn-primary btn-confirm">${confirmText}</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                overlay.classList.remove('hidden');
+            });
+            
+            const close = (result) => {
+                overlay.classList.add('hidden');
+                setTimeout(() => {
+                    overlay.remove();
+                    resolve(result);
+                }, 300);
+            };
+            
+            overlay.querySelector('.modal-close').addEventListener('click', () => close(false));
+            overlay.querySelector('.btn-cancel').addEventListener('click', () => close(false));
+            overlay.querySelector('.btn-confirm').addEventListener('click', () => close(true));
+        });
+    }
+
+    showFormModal(title, description, inputPlaceholder = "Enter value", confirmText = "Submit", cancelText = "Cancel") {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.style.zIndex = '9999';
+            
+            overlay.innerHTML = `
+                <div class="modal-card" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2>${title}</h2>
+                        <button class="modal-close btn-icon">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--color-on-surface-variant); font-size: 14px; margin-bottom: 16px;">${description}</p>
+                        <input type="text" class="form-input custom-modal-input" placeholder="${inputPlaceholder}" style="width: 100%;">
+                    </div>
+                    <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--color-surface-container); display: flex; justify-content: flex-end; gap: 12px; background-color: var(--color-surface-low);">
+                        <button class="btn btn-outline btn-cancel">${cancelText}</button>
+                        <button class="btn btn-primary btn-confirm">${confirmText}</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            const inputField = overlay.querySelector('.custom-modal-input');
+            inputField.focus();
+            
+            requestAnimationFrame(() => {
+                overlay.classList.remove('hidden');
+            });
+            
+            const close = (value) => {
+                overlay.classList.add('hidden');
+                setTimeout(() => {
+                    overlay.remove();
+                    resolve(value);
+                }, 300);
+            };
+            
+            overlay.querySelector('.modal-close').addEventListener('click', () => close(null));
+            overlay.querySelector('.btn-cancel').addEventListener('click', () => close(null));
+            overlay.querySelector('.btn-confirm').addEventListener('click', () => {
+                close(inputField.value.trim() || null);
+            });
+            
+            // Enter key support
+            inputField.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    close(inputField.value.trim() || null);
+                }
+            });
+        });
+    }
+
     // In-App Toast Dispatcher
     showToast(message, type = "info") {
         // Play synthesized audible bell chime (Feature 9)

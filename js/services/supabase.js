@@ -20,7 +20,9 @@ class SupabaseService {
             ],
             items: [],
             claims: [],
-            notifications: []
+            notifications: [],
+            tickets: [],
+            ticket_replies: []
         };
 
         this.initPromise = this.init();
@@ -281,8 +283,61 @@ class SupabaseService {
             admin_notes: null,
             created_at: new Date().toISOString()
         };
-        
         this.mockDB.claims.push(claim1);
+
+        // 3.5 Seed Support Tickets
+        const ticket1 = {
+            id: "ticket-1",
+            ticket_number: "TKT-1001",
+            user_id: studentProfile.id,
+            subject: "Cannot update my phone number",
+            category: "Account Issue",
+            priority: "Medium",
+            description: "I am trying to update my phone number on my profile page but it keeps throwing a validation error.",
+            status: "Open",
+            attachment_url: null,
+            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+        };
+
+        const ticket1_reply1 = {
+            id: "reply-1",
+            ticket_id: "ticket-1",
+            user_id: adminProfile.id,
+            message: "Hi Alex, we are looking into this issue. It seems there is a temporary bug with the international code formatting.",
+            created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
+        };
+
+        const ticket2 = {
+            id: "ticket-2",
+            ticket_number: "TKT-1002",
+            user_id: studentProfile2.id,
+            subject: "Urgent: Lost MacBook in Library",
+            category: "Lost Item Issue",
+            priority: "High",
+            description: "I lost my MacBook Pro and need to know if security has it before I report it to the police.",
+            status: "In Review",
+            attachment_url: null,
+            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date(Date.now() - 22 * 60 * 60 * 1000).toISOString()
+        };
+        
+        const ticket3 = {
+            id: "ticket-3",
+            ticket_number: "TKT-1003",
+            user_id: studentProfile.id,
+            subject: "Appreciated the fast recovery!",
+            category: "General Support",
+            priority: "Low",
+            description: "Just wanted to say thanks for helping me find my wallet so quickly.",
+            status: "Resolved",
+            attachment_url: null,
+            created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date(Date.now() - 40 * 60 * 60 * 1000).toISOString()
+        };
+
+        this.mockDB.tickets.push(ticket1, ticket2, ticket3);
+        this.mockDB.ticket_replies.push(ticket1_reply1);
 
         // 4. Seed Notifications
         const notif1 = {
@@ -1490,6 +1545,199 @@ class SupabaseService {
                 .getPublicUrl(filePath);
 
             return data.publicUrl;
+        }
+    }
+    // ==========================================
+    // SUPPORT TICKET SERVICES
+    // ==========================================
+
+    async createSupportTicket(subject, category, priority, description, attachmentUrl) {
+        if (!this.session) throw new Error("Authentication required");
+        const userId = this.session.profile.id;
+        
+        if (this.isMock) {
+            const newTicket = {
+                id: "ticket-" + Math.floor(Math.random() * 1000000),
+                ticket_number: "TKT-" + (1000 + this.mockDB.tickets.length + 1),
+                user_id: userId,
+                subject: subject,
+                category: category,
+                priority: priority,
+                description: description,
+                status: "Open",
+                attachment_url: attachmentUrl,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+            this.mockDB.tickets.push(newTicket);
+            
+            // Generate notification for admins
+            const adminProfiles = this.mockDB.profiles.filter(p => p.role === "admin");
+            adminProfiles.forEach(admin => {
+                this.mockDB.notifications.push({
+                    id: "notif-" + Math.floor(Math.random() * 1000000),
+                    user_id: admin.id,
+                    type: "ticket_created",
+                    title: "New Support Ticket",
+                    message: `New ticket created: ${subject}`,
+                    is_read: false,
+                    link_to: "#admin",
+                    created_at: new Date().toISOString()
+                });
+            });
+            this.saveMockDB();
+            return newTicket;
+        } else {
+            const { data, error } = await this.client
+                .from("support_tickets")
+                .insert([{
+                    user_id: userId,
+                    subject, category, priority, description,
+                    status: "Open",
+                    attachment_url: attachmentUrl
+                }])
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        }
+    }
+
+    async getSupportTickets(filters = {}) {
+        if (!this.session) throw new Error("Authentication required");
+        const userId = this.session.profile.id;
+        const isAdmin = this.session.profile.role === "admin";
+        
+        if (this.isMock) {
+            let tickets = [...this.mockDB.tickets];
+            
+            // Role-based access
+            if (!isAdmin) {
+                tickets = tickets.filter(t => t.user_id === userId);
+            }
+            
+            // Status filter
+            if (filters.status && filters.status !== "All") {
+                tickets = tickets.filter(t => t.status === filters.status);
+            }
+            
+            // Sort
+            tickets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            // Attach user data
+            return tickets.map(ticket => {
+                const user = this.mockDB.profiles.find(p => p.id === ticket.user_id);
+                return { ...ticket, profiles: user };
+            });
+        } else {
+            let query = this.client.from("support_tickets").select("*, profiles(*)");
+            if (!isAdmin) {
+                query = query.eq("user_id", userId);
+            }
+            if (filters.status && filters.status !== "All") {
+                query = query.eq("status", filters.status);
+            }
+            const { data, error } = await query.order("created_at", { ascending: false });
+            if (error) throw error;
+            return data;
+        }
+    }
+
+    async getSupportTicketById(ticketId) {
+        if (!this.session) throw new Error("Authentication required");
+        
+        if (this.isMock) {
+            const ticket = this.mockDB.tickets.find(t => t.id === ticketId);
+            if (!ticket) throw new Error("Ticket not found");
+            const user = this.mockDB.profiles.find(p => p.id === ticket.user_id);
+            const replies = this.mockDB.ticket_replies.filter(r => r.ticket_id === ticketId).map(reply => {
+                const replyUser = this.mockDB.profiles.find(p => p.id === reply.user_id);
+                return { ...reply, profiles: replyUser };
+            }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            
+            return { ...ticket, profiles: user, replies };
+        } else {
+            const { data: ticket, error: ticketError } = await this.client
+                .from("support_tickets")
+                .select("*, profiles(*)")
+                .eq("id", ticketId)
+                .single();
+            if (ticketError) throw ticketError;
+            
+            const { data: replies, error: replyError } = await this.client
+                .from("ticket_replies")
+                .select("*, profiles(*)")
+                .eq("ticket_id", ticketId)
+                .order("created_at", { ascending: true });
+            if (replyError) throw replyError;
+            
+            return { ...ticket, replies };
+        }
+    }
+
+    async addTicketReply(ticketId, message) {
+        if (!this.session) throw new Error("Authentication required");
+        const userId = this.session.profile.id;
+        
+        if (this.isMock) {
+            const reply = {
+                id: "reply-" + Math.floor(Math.random() * 1000000),
+                ticket_id: ticketId,
+                user_id: userId,
+                message: message,
+                created_at: new Date().toISOString()
+            };
+            this.mockDB.ticket_replies.push(reply);
+            
+            const ticket = this.mockDB.tickets.find(t => t.id === ticketId);
+            if (ticket) ticket.updated_at = reply.created_at;
+            this.saveMockDB();
+            
+            const user = this.mockDB.profiles.find(p => p.id === userId);
+            return { ...reply, profiles: user };
+        } else {
+            const { data, error } = await this.client
+                .from("ticket_replies")
+                .insert([{ ticket_id: ticketId, user_id: userId, message }])
+                .select("*, profiles(*)")
+                .single();
+            if (error) throw error;
+            return data;
+        }
+    }
+
+    async updateTicketStatus(ticketId, status) {
+        if (!this.session || this.session.profile.role !== "admin") throw new Error("Admin privileges required");
+        
+        if (this.isMock) {
+            const ticket = this.mockDB.tickets.find(t => t.id === ticketId);
+            if (!ticket) throw new Error("Ticket not found");
+            ticket.status = status;
+            ticket.updated_at = new Date().toISOString();
+            
+            // Notify user
+            this.mockDB.notifications.push({
+                id: "notif-" + Math.floor(Math.random() * 1000000),
+                user_id: ticket.user_id,
+                type: "ticket_updated",
+                title: "Ticket Status Updated",
+                message: `Ticket ${ticket.ticket_number} is now ${status}.`,
+                is_read: false,
+                link_to: `#support-detail/${ticketId}`,
+                created_at: new Date().toISOString()
+            });
+            
+            this.saveMockDB();
+            return ticket;
+        } else {
+            const { data, error } = await this.client
+                .from("support_tickets")
+                .update({ status, updated_at: new Date().toISOString() })
+                .eq("id", ticketId)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
         }
     }
 }

@@ -1,5 +1,6 @@
 import { db } from "../services/supabase.js";
 import { getCategoryIcon, formatDate } from "../utils/helpers.js";
+import { notify } from "../services/notify.js";
 
 export default {
     itemId: null,
@@ -317,14 +318,21 @@ export default {
 
         // Archive / Delete report button trigger
         document.getElementById("btn-delete-item")?.addEventListener("click", async () => {
-            if (confirm("Are you sure you want to permanently delete/archive this item listing? This action is irreversible.")) {
+            const confirmed = await notify.showConfirmationModal(
+                "Delete Report",
+                "Are you sure you want to permanently delete/archive this item listing? This action is irreversible.",
+                "Delete",
+                "Cancel"
+            );
+            
+            if (confirmed) {
                 app.showLoader();
                 try {
                     await db.deleteItem(this.itemId);
-                    notify.showToast("Report deleted successfully.", "success");
+                    notify.showSuccessToast("Report deleted successfully.");
                     app.navigateTo("browse");
                 } catch (err) {
-                    notify.showToast("Failed to delete item: " + err.message, "error");
+                    notify.showErrorToast("Failed to delete item: " + err.message);
                 } finally {
                     app.hideLoader();
                 }
@@ -333,7 +341,7 @@ export default {
 
         // I found this lost item trigger
         document.getElementById("btn-found-this")?.addEventListener("click", () => {
-            alert(`Thank you for finding this item! Please bring it to the Central Campus Security Desk (Student Union Room 102). Reference ID: ${this.itemId}. Security will log it and notify the owner directly!`);
+            notify.showSuccessToast(`Thank you! Please bring it to Security (Room 102). Ref: ${this.itemId}`);
         });
     }
 };

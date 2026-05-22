@@ -91,13 +91,15 @@ export default {
                 <div style="display: flex; flex-direction: column; gap: 32px; flex: 1; min-width: 300px;">
                     <!-- Profile Card -->
                     <div class="card" style="padding: 32px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 20px;">
-                        <div style="width: 100px; height: 100px; border-radius: 50%; background-color: var(--color-primary-container); color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; overflow: hidden; border: 4px solid var(--color-surface-container);">
+                        <div style="width: 100px; height: 100px; border-radius: 50%; background-color: ${user.role === 'admin' ? '#d97706' : 'var(--color-primary-container)'}; color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; overflow: hidden; border: 4px solid ${user.role === 'admin' ? 'rgba(217, 119, 6, 0.2)' : 'var(--color-surface-container)'};">
                             ${user.avatar_url ? `<img src="${user.avatar_url}" style="width:100%; height:100%; object-fit:cover;">` : user.name[0]}
                         </div>
                         
                         <div>
                             <h3 style="font-size: 22px; font-weight: 700; color: var(--color-on-surface); font-family: 'Outfit', sans-serif;">${user.name}</h3>
-                            <p style="font-size: 13px; color: var(--color-outline); font-weight: bold; text-transform: uppercase; margin-top: 4px;">${user.role.toUpperCase()} ACCOUNT</p>
+                            <p style="font-size: 13px; color: ${user.role === 'admin' ? '#d97706' : 'var(--color-outline)'}; font-weight: bold; text-transform: uppercase; margin-top: 4px;">
+                                ${user.role === 'admin' ? '<i class="fa-solid fa-crown" style="margin-right: 4px;"></i>' : ''}${user.role.toUpperCase()} ACCOUNT
+                            </p>
                         </div>
 
                         <div style="width: 100%; border-top: 1px solid var(--color-surface-container); padding-top: 24px; display: flex; flex-direction: column; gap: 12px; text-align: left; font-size: 14px;">
@@ -207,7 +209,7 @@ export default {
                 app.showLoader();
                 try {
                     await db.preRegisterAsset(name, serial);
-                    notify.showToast(\`Successfully secured serial keys for \${name}!\`, "success");
+                    notify.showToast(`Successfully secured serial keys for ${name}!`, "success");
                     app.renderView();
                 } catch (err) {
                     notify.showToast(err.message || "Failed to register asset.", "error");
@@ -222,14 +224,21 @@ export default {
         deleteAssetBtns.forEach(btn => {
             btn.addEventListener("click", async () => {
                 const id = btn.getAttribute("data-id");
-                if (confirm("Are you sure you want to remove this pre-registered device asset?")) {
+                const confirmed = await notify.showConfirmationModal(
+                    "Remove Device Asset",
+                    "Are you sure you want to remove this pre-registered device asset?",
+                    "Remove",
+                    "Cancel"
+                );
+                
+                if (confirmed) {
                     app.showLoader();
                     try {
                         await db.deleteRegisteredAsset(id);
-                        notify.showToast("Registered device asset removed successfully.", "success");
+                        notify.showSuccessToast("Registered device asset removed successfully.");
                         app.renderView();
                     } catch (err) {
-                        notify.showToast("Failed to remove asset: " + err.message, "error");
+                        notify.showErrorToast("Failed to remove asset: " + err.message);
                     } finally {
                         app.hideLoader();
                     }

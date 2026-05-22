@@ -22,11 +22,11 @@ export default {
                     <div class="settings-row">
                         <div class="settings-info">
                             <strong>Dark Mode</strong>
-                            <span>Toggle dark mode theme for the application (Coming soon)</span>
+                            <span>Toggle dark mode theme for the application.</span>
                         </div>
                         <div class="settings-action">
                             <label class="toggle-switch">
-                                <input type="checkbox" disabled>
+                                <input type="checkbox" id="setting-dark-mode" ${localStorage.getItem('theme') === 'dark' ? 'checked' : ''}>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -78,7 +78,7 @@ export default {
                             <span>Download a copy of your reported items and claims history.</span>
                         </div>
                         <div class="settings-action">
-                            <button class="btn btn-outline" onclick="alert('Data export feature is currently in development.')">
+                            <button class="btn btn-outline" id="btn-export-data">
                                 <i class="fa-solid fa-download"></i> Export Data
                             </button>
                         </div>
@@ -106,7 +106,7 @@ export default {
                 .settings-card-header {
                     padding: 24px 32px 16px 32px;
                     border-bottom: 1px solid var(--color-surface-container);
-                    background-color: #ffffff;
+                    background-color: var(--color-surface-lowest);
                 }
                 
                 .settings-card-header h3 {
@@ -233,8 +233,23 @@ export default {
 
     attachEvents(app) {
         // Handle mock interactions for settings UI
+        const darkModeToggle = document.getElementById("setting-dark-mode");
         const emailToggle = document.getElementById("setting-email-alerts");
         const pushToggle = document.getElementById("setting-push-alerts");
+        
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener("change", (e) => {
+                if (e.target.checked) {
+                    document.body.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    notify.showToast("Dark mode enabled.", "success");
+                } else {
+                    document.body.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                    notify.showToast("Light mode enabled.", "info");
+                }
+            });
+        }
         
         if (emailToggle) {
             emailToggle.addEventListener("change", (e) => {
@@ -247,6 +262,13 @@ export default {
             pushToggle.addEventListener("change", (e) => {
                 const state = e.target.checked ? "enabled" : "disabled";
                 notify.showToast(`Push notifications have been ${state}.`, "info");
+            });
+        }
+        
+        const btnExportData = document.getElementById("btn-export-data");
+        if (btnExportData) {
+            btnExportData.addEventListener("click", () => {
+                notify.showToast("Data export feature is currently in development.", "info");
             });
         }
     }

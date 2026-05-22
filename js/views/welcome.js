@@ -96,13 +96,13 @@ export default {
                 </section>
                 
                 <!-- Welcome Page Footer -->
-                <footer style="margin-top: 48px; border-top: 1px solid #e2e8f0; padding-top: 24px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748b;">
+                <footer style="margin-top: 48px; border-top: 1px solid var(--color-surface-container); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--color-outline);">
                     <div><strong>FindIt</strong></div>
                     <div style="display: flex; gap: 16px;">
-                        <a href="#help" style="color: #64748b;">Privacy Policy</a>
-                        <a href="#help" style="color: #64748b;">Terms of Use</a>
-                        <a href="#help" style="color: #64748b;">Campus Security</a>
-                        <a href="#help" style="color: #64748b;">Accessibility</a>
+                        <a href="#help" style="color: var(--color-outline);">Privacy Policy</a>
+                        <a href="#help" style="color: var(--color-outline);">Terms of Use</a>
+                        <a href="#help" style="color: var(--color-outline);">Campus Security</a>
+                        <a href="#help" style="color: var(--color-outline);">Accessibility</a>
                     </div>
                     <div>&copy; 2024 FindIt University Systems. All rights reserved.</div>
                 </footer>

@@ -55,7 +55,7 @@ export default {
                 </div>
             </div>
 
-            <div style="width: 100%;">
+            <div style="width: 100%; margin-top: 32px;">
                 <!-- Tabs Panel -->
                 <div class="card" style="padding: 0; overflow: hidden; min-height: 480px; display: flex; flex-direction: column; width: 100%;">
                     

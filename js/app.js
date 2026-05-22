@@ -11,6 +11,9 @@ import reportsView from "./views/reports.js";
 import analyticsView from "./views/analytics.js";
 import adminView from "./views/admin.js";
 import settingsView from "./views/settings.js";
+import supportListView from "./views/support-list.js";
+import supportCreateView from "./views/support-create.js";
+import supportDetailView from "./views/support-detail.js";
 
 class AppCoordinator {
     constructor() {
@@ -27,7 +30,10 @@ class AppCoordinator {
             "login": authView,
             "register": authView,
             "forgot": authView,
-            "settings": settingsView
+            "settings": settingsView,
+            "support-list": supportListView,
+            "support-create": supportCreateView,
+            "support-detail": supportDetailView
         };
         
         this.activeRoute = null;
@@ -39,6 +45,11 @@ class AppCoordinator {
 
     async init() {
         console.log("FindIt: Core application initializing...");
+        
+        // Initialize Theme from Local Storage
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
         
         // Connect listeners
         window.addEventListener("hashchange", () => this.handleRouting());
@@ -83,6 +94,9 @@ class AppCoordinator {
         } else if (hash.startsWith("claim/")) {
             routeName = "claim";
             routeParam = hash.replace("claim/", "");
+        } else if (hash.startsWith("support-detail/")) {
+            routeName = "support-detail";
+            routeParam = hash.replace("support-detail/", "");
         }
 
         // Reset Browse filters on fresh page load (BUG-05)
@@ -129,6 +143,8 @@ class AppCoordinator {
                 view.itemId = routeParam;
             } else if (routeName === "claim") {
                 view.itemId = routeParam;
+            } else if (routeName === "support-detail") {
+                view.ticketId = routeParam;
             } else if (routeName === "login") {
                 view.mode = "login";
             } else if (routeName === "register") {

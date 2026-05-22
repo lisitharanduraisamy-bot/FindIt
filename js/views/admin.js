@@ -46,8 +46,55 @@ export default {
             console.warn("Failed to get audit logs:", e);
         }
 
+        // Fetch support tickets
+        let tickets = [];
+        try {
+            tickets = await db.getSupportTickets({ status: "All" });
+        } catch (e) {
+            console.warn("Failed to get support tickets:", e);
+        }
+
+        const openTickets = tickets.filter(t => t.status === "Open").length;
+        const inReviewTickets = tickets.filter(t => t.status === "In Review").length;
+        const resolvedTickets = tickets.filter(t => t.status === "Resolved").length;
+
         return `
-            <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="admin-theme" style="display: flex; flex-direction: column; gap: 24px;">
+                <style>
+                    .admin-theme {
+                        --color-primary: #d97706; /* Gold */
+                        --color-primary-hover: #b45309;
+                        --color-primary-container: rgba(217, 119, 6, 0.1);
+                    }
+                    
+                    /* Make all primary buttons gold */
+                    .admin-theme .btn-primary {
+                        background-color: var(--color-primary) !important;
+                        border-color: var(--color-primary) !important;
+                        color: white !important;
+                    }
+                    .admin-theme .btn-primary:hover {
+                        background-color: var(--color-primary-hover) !important;
+                        border-color: var(--color-primary-hover) !important;
+                    }
+                    
+                    /* Make all outline buttons gold */
+                    .admin-theme .btn-outline {
+                        color: var(--color-primary) !important;
+                        border-color: var(--color-primary) !important;
+                    }
+                    .admin-theme .btn-outline:hover {
+                        background-color: var(--color-primary-container) !important;
+                        color: var(--color-primary-hover) !important;
+                        border-color: var(--color-primary-hover) !important;
+                    }
+                    
+                    /* Make active tabs gold */
+                    .admin-theme .profile-tab-btn.active {
+                        border-bottom-color: var(--color-primary) !important;
+                        color: var(--color-primary) !important;
+                    }
+                </style>
                 <!-- Header -->
                 <div>
                     <h2 style="font-size: 28px; font-weight: 800; color: var(--color-on-surface); font-family: 'Outfit', sans-serif;">Security Claims Center</h2>
@@ -85,6 +132,45 @@ export default {
                     </div>
                 </div>
 
+                <div class="dashboard-grid" style="grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                    <div class="dashboard-stats-card">
+                        <div class="stats-card-icon" style="background-color: rgba(99, 102, 241, 0.08); color: #6366f1;">
+                            <i class="fa-solid fa-headset"></i>
+                        </div>
+                        <div>
+                            <span class="stats-card-label">Total Tickets</span>
+                            <div class="stats-card-value">${tickets.length}</div>
+                        </div>
+                    </div>
+                    <div class="dashboard-stats-card">
+                        <div class="stats-card-icon" style="background-color: rgba(234, 179, 8, 0.08); color: #eab308;">
+                            <i class="fa-regular fa-envelope-open"></i>
+                        </div>
+                        <div>
+                            <span class="stats-card-label">Open Tickets</span>
+                            <div class="stats-card-value">${openTickets}</div>
+                        </div>
+                    </div>
+                    <div class="dashboard-stats-card">
+                        <div class="stats-card-icon" style="background-color: rgba(59, 130, 246, 0.08); color: #3b82f6;">
+                            <i class="fa-solid fa-spinner"></i>
+                        </div>
+                        <div>
+                            <span class="stats-card-label">In Review</span>
+                            <div class="stats-card-value">${inReviewTickets}</div>
+                        </div>
+                    </div>
+                    <div class="dashboard-stats-card">
+                        <div class="stats-card-icon" style="background-color: rgba(34, 197, 94, 0.08); color: #22c55e;">
+                            <i class="fa-solid fa-check-double"></i>
+                        </div>
+                        <div>
+                            <span class="stats-card-label">Resolved</span>
+                            <div class="stats-card-value">${resolvedTickets}</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tabbed Content Section -->
                 <div class="card" style="padding: 0; overflow: hidden; min-height: 480px; display: flex; flex-direction: column;">
                     
@@ -99,6 +185,9 @@ export default {
                         <button class="profile-tab-btn ${this.activeAdminTab === 'blacklist' ? 'active' : ''}" id="admin-tab-blacklist" style="flex: 1; padding: 16px 20px; font-weight: 700; font-size: 14px; text-align: center; border-bottom: 3px solid ${this.activeAdminTab === 'blacklist' ? 'var(--color-primary)' : 'transparent'}; color: ${this.activeAdminTab === 'blacklist' ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}; cursor: pointer; background: transparent; border: none;">
                             <i class="fa-solid fa-user-slash" style="margin-right: 6px;"></i> User Blacklist
                         </button>
+                        <button class="profile-tab-btn ${this.activeAdminTab === 'support' ? 'active' : ''}" id="admin-tab-support" style="flex: 1; padding: 16px 20px; font-weight: 700; font-size: 14px; text-align: center; border-bottom: 3px solid ${this.activeAdminTab === 'support' ? 'var(--color-primary)' : 'transparent'}; color: ${this.activeAdminTab === 'support' ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}; cursor: pointer; background: transparent; border: none;">
+                            <i class="fa-solid fa-headset" style="margin-right: 6px;"></i> Support Tickets
+                        </button>
                         <button class="profile-tab-btn ${this.activeAdminTab === 'audit' ? 'active' : ''}" id="admin-tab-audit" style="flex: 1; padding: 16px 20px; font-weight: 700; font-size: 14px; text-align: center; border-bottom: 3px solid ${this.activeAdminTab === 'audit' ? 'var(--color-primary)' : 'transparent'}; color: ${this.activeAdminTab === 'audit' ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}; cursor: pointer; background: transparent; border: none;">
                             <i class="fa-solid fa-shield-halved" style="margin-right: 6px;"></i> Security Audit Logs
                         </button>
@@ -106,7 +195,7 @@ export default {
 
                     <!-- Tab Content Body -->
                     <div style="flex: 1; padding: 24px;">
-                        ${this.renderTabContent(pendingClaims, approvedClaims, profiles, auditLogs)}
+                        ${this.renderTabContent(pendingClaims, approvedClaims, profiles, auditLogs, tickets)}
                     </div>
 
                 </div>
@@ -114,7 +203,7 @@ export default {
         `;
     },
 
-    renderTabContent(pendingClaims, approvedClaims, profiles, auditLogs) {
+    renderTabContent(pendingClaims, approvedClaims, profiles, auditLogs, tickets) {
         if (this.activeAdminTab === "claims") {
             if (pendingClaims.length === 0) {
                 return `
@@ -211,6 +300,54 @@ export default {
                     </div>
                 `;
             }).join("");
+        }
+
+        if (this.activeAdminTab === "support") {
+            if (!tickets || tickets.length === 0) {
+                return `<div class="empty-state" style="padding: 40px; text-align: center; color: var(--color-outline);">No support tickets found.</div>`;
+            }
+            return `
+                <div style="overflow-x: auto; width: 100%;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--color-surface-container); color: var(--color-outline); font-weight: bold; font-size: 12px; text-transform: uppercase;">
+                                <th style="padding: 12px 16px;">Ticket ID</th>
+                                <th style="padding: 12px 16px;">Subject</th>
+                                <th style="padding: 12px 16px;">Category</th>
+                                <th style="padding: 12px 16px;">Status</th>
+                                <th style="padding: 12px 16px;">Priority</th>
+                                <th style="padding: 12px 16px;">Created By</th>
+                                <th style="padding: 12px 16px;">Created Date</th>
+                                <th style="padding: 12px 16px; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tickets.map(ticket => {
+                                let badgeClass = "badge-outline";
+                                if (ticket.status === "Open") badgeClass = "badge-pending";
+                                else if (ticket.status === "In Review") badgeClass = "badge-found";
+                                else if (ticket.status === "Resolved") badgeClass = "badge-verified";
+                                else if (ticket.status === "Closed") badgeClass = "badge-returned";
+
+                                return `
+                                    <tr style="border-bottom: 1px solid var(--color-surface-container); vertical-align: middle;">
+                                        <td style="padding: 16px; font-weight: 600;">${ticket.ticket_number}</td>
+                                        <td style="padding: 16px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${ticket.subject}">${ticket.subject}</td>
+                                        <td style="padding: 16px;">${ticket.category}</td>
+                                        <td style="padding: 16px;"><span class="badge ${badgeClass}">${ticket.status}</span></td>
+                                        <td style="padding: 16px;">${ticket.priority}</td>
+                                        <td style="padding: 16px;">${ticket.profiles?.name || 'Unknown'}</td>
+                                        <td style="padding: 16px;">${formatDate(ticket.created_at)}</td>
+                                        <td style="padding: 16px; text-align: right;">
+                                            <a href="#support-detail/${ticket.id}" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">Manage</a>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
         }
 
         if (this.activeAdminTab === "approved") {
@@ -354,6 +491,10 @@ export default {
         });
         document.getElementById("admin-tab-blacklist")?.addEventListener("click", () => {
             this.activeAdminTab = "blacklist";
+            app.renderView();
+        });
+        document.getElementById("admin-tab-support")?.addEventListener("click", () => {
+            this.activeAdminTab = "support";
             app.renderView();
         });
         document.getElementById("admin-tab-audit")?.addEventListener("click", () => {
@@ -560,7 +701,13 @@ export default {
                 const userId = toggle.getAttribute("data-id");
                 const checked = toggle.checked;
 
-                const confirmChange = confirm(`Are you sure you want to ${checked ? 'BAN' : 'UNBAN'} this user? ${checked ? 'Banned users will be locked out of the portal immediately.' : 'Unbanned users will regain portal capabilities.'}`);
+                const confirmChange = await notify.showConfirmationModal(
+                    checked ? "Ban User" : "Unban User",
+                    `Are you sure you want to ${checked ? 'BAN' : 'UNBAN'} this user? ${checked ? 'Banned users will be locked out of the portal immediately.' : 'Unbanned users will regain portal capabilities.'}`,
+                    checked ? "Yes, Ban" : "Yes, Unban",
+                    "Cancel"
+                );
+                
                 if (!confirmChange) {
                     toggle.checked = !checked; // revert switch state
                     return;
