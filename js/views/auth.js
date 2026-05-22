@@ -197,20 +197,17 @@ export default {
 
         if (toggleLogin) {
             toggleLogin.addEventListener("click", () => {
-                this.mode = "login";
-                app.renderView();
+                app.navigateTo("login");
             });
         }
         if (toggleRegister) {
             toggleRegister.addEventListener("click", () => {
-                this.mode = "register";
-                app.renderView();
+                app.navigateTo("register");
             });
         }
         if (toggleForgot) {
             toggleForgot.addEventListener("click", () => {
-                this.mode = "forgot";
-                app.renderView();
+                app.navigateTo("forgot");
             });
         }
 
